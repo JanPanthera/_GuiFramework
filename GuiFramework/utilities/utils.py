@@ -1,13 +1,13 @@
 # utils.py / GuiFramework
 
-import ctypes
 import time
+import ctypes
+import logging
 
 DEBOUNCE_DELAY = 100
 
 
 def setup_default_logger():
-    import logging
     logger = logging.getLogger(__name__)
     handler = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -17,7 +17,32 @@ def setup_default_logger():
     return logger
 
 
-def get_high_dpi_scale():
+def get_dpi_scaling_factor(logger=None):
+    """
+    Function to get the DPI scaling factor for the current system.
+    Designed to run on Windows. If not on Windows, returns 1.0.
+    """
+    logger = logger or setup_default_logger()
+    scaling_factor = 1.0
+
+    if not hasattr(ctypes, 'windll'):
+        logger.warning("get_dpi_scaling_factor is designed to run on Windows.")
+        return scaling_factor
+
+    try:
+        awareness = ctypes.c_int()
+        error_code = ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
+
+        if error_code == 0:
+            dpi = ctypes.windll.user32.GetDpiForSystem()
+            scaling_factor = dpi / 96.0
+    except (AttributeError, OSError) as e:
+        logger.error(f"Failed to query DPI settings: {type(e).__name__}: {e}. Using default scaling factor.")
+
+    return scaling_factor
+
+
+def get_dpi_scaling_factor():
     return ctypes.windll.user32.GetDpiForSystem() / 96
 
 

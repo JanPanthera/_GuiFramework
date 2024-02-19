@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from GuiFramework.utilities.utils import handle_exception, trigger_debug_break
 
 
 class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
@@ -137,7 +136,6 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
                 self.command(entry)
         except Exception as e:
             self._log_error(f"Error executing command for entry '{entry}': {e}")
-            handle_exception(e, f"Error executing command for entry '{entry}'")
 
     def _log_warning(self, message):
         if self.logger:

@@ -3,7 +3,7 @@
 import ctypes
 import customtkinter as ctk
 from enum import Enum, auto
-from GuiFramework.utilities import get_high_dpi_scale
+from GuiFramework.utilities import get_dpi_scaling_factor
 from GuiFramework.utilities.utils import Debouncer, setup_default_logger
 
 
@@ -59,7 +59,7 @@ class Window(ctk.CTk):
         self.window_position = self.configs[WindowSettings.WINDOW_POSITION]
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.high_dpi_scale = get_high_dpi_scale()
+        self.high_dpi_scale = get_dpi_scaling_factor()
         self.resize_debouncer = Debouncer(delay=0.1)
         self.move_debouncer = Debouncer(delay=0.1)
         self._on_window_resize_debounced = self.resize_debouncer(self._on_window_resize)
@@ -134,8 +134,8 @@ class Window(ctk.CTk):
     def set_window_size(self, size):
         try:
             self.window_size = size
-            width = int(size[0] // get_high_dpi_scale())
-            height = int(size[1] // get_high_dpi_scale())
+            width = int(size[0] // get_dpi_scaling_factor())
+            height = int(size[1] // get_dpi_scaling_factor())
             pos_x, pos_y = self.window_position
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
@@ -148,8 +148,8 @@ class Window(ctk.CTk):
     def set_window_position(self, position):
         try:
             width, height = self.window_size
-            width = int(width // get_high_dpi_scale())
-            height = int(height // get_high_dpi_scale())
+            width = int(width // get_dpi_scaling_factor())
+            height = int(height // get_dpi_scaling_factor())
             pos_x, pos_y = max(int(position[0]), 0), max(int(position[1]), 0)
             self.window_position = (pos_x, pos_y)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
@@ -164,8 +164,8 @@ class Window(ctk.CTk):
         try:
             self.window_size = size
             self.window_position = position
-            width = int(size[0] // get_high_dpi_scale())
-            height = int(size[1] // get_high_dpi_scale())
+            width = int(size[0] // get_dpi_scaling_factor())
+            height = int(size[1] // get_dpi_scaling_factor())
             pos_x, pos_y = max(int(position[0]), 0), max(int(position[1]), 0)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
@@ -179,7 +179,7 @@ class Window(ctk.CTk):
         if not self.winfo_ismapped():
             self.deiconify()
         self.update_idletasks()
-        high_dpi_scale = get_high_dpi_scale()
+        high_dpi_scale = get_dpi_scaling_factor()
         screen_width = int(self.winfo_screenwidth() * high_dpi_scale)
         screen_height = int(self.winfo_screenheight() * high_dpi_scale)
         titlebar_height = int(self.winfo_rooty() - self.winfo_y())
@@ -289,7 +289,7 @@ class Window(ctk.CTk):
         if enable:
             if hasattr(ctk, 'activate_automatic_dpi_awareness'):
                 ctk.activate_automatic_dpi_awareness()
-                self.high_dpi_scale = get_high_dpi_scale()
+                self.high_dpi_scale = get_dpi_scaling_factor()
                 self.logger.info(f"High DPI mode activated. Scale: {self.high_dpi_scale}")
             else:
                 self.logger.error("Reactivating Automatic DPI awareness is not supported on this customtkinter repository.")
