@@ -7,8 +7,8 @@ import logging
 DEBOUNCE_DELAY = 100
 
 
-def setup_default_logger():
-    logger = logging.getLogger(__name__)
+def setup_default_logger(logger_name='default_logger'):
+    logger = logging.getLogger(logger_name)
     handler = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
