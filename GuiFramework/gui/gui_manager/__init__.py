@@ -2,5 +2,4 @@
 
 from .gui_manager import GuiManager
 from .gui_builder import GuiBuilder
-from .widget_builder import WidgetBuilder
-from .abstract_builder import AbstractBuilder
+from .widget_builder import *
