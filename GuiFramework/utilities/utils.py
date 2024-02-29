@@ -1,4 +1,4 @@
-# utils.py / GuiFramework
+# utilities/utils.py
 
 import time
 import ctypes

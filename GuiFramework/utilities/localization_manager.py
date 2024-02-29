@@ -49,7 +49,17 @@ class LocalizationManager:
     def translate(self, key):
         if not key:
             return key
-        return self.active_dict.get(key, self.active_dict.get(key.lower(), key))
+        if key in self.active_dict:
+            return self.active_dict[key]
+        else:
+            key = self.get_key(key)
+            return self.active_dict.get(key, key)
+
+    def translate_with_params(self, key, **params):
+        translation = self.translate(key)
+        for placeholder, value in params.items():
+            translation = translation.replace(f"{{placeholder}}", str(value))
+        return translation
 
     def translate_in_language(self, key, language_code):
         language_code = self.language_map.get(language_code.lower(), language_code)

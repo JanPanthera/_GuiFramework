@@ -3,6 +3,7 @@
 from .logger import *
 from .file_ops import *
 from .utils import *
+from .gui_utils import *
 from .helper_ctk import *
 
 from .config_manager import ConfigManager

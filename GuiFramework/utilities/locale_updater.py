@@ -44,18 +44,18 @@ class LocaleUpdater:
     def update_locales(self, source_dir):
         if self.extract_strings:
             self.extracted_strings.clear()
+            self._extract_locale_strings(source_dir)
         self._merge_extracted_strings_with_source_file()
         self._update_target_locales()
 
     def _extract_locale_strings(self, source_dir):
-        with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
-            for root, _, files in os.walk(source_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    if file.endswith(".py"):
-                        executor.submit(self._process_python_file, file_path)
-                    elif self.GUI_FILE_PATTERN.match(file):
-                        executor.submit(self._process_gui_file, file_path)
+        for root, _, files in os.walk(source_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if file.endswith(".py"):
+                    self._process_python_file(file_path)
+                elif self.GUI_FILE_PATTERN.match(file):
+                    self._process_gui_file(file_path)
 
     def _process_python_file(self, file_path):
         try:
@@ -71,24 +71,25 @@ class LocaleUpdater:
 
     def _process_gui_file(self, file_path):
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                gui_data = json.load(f)
-                self._extract_text_from_gui_data(gui_data)
-        except json.JSONDecodeError as e:
-            if self.logger:
-                self.logger.error(f"JSON decode error in {file_path}: {str(e)}")
+            with open(file_path, "r", encoding="utf-8") as gui_file:
+                for line in gui_file:
+                    # Trim leading and trailing whitespace from the line
+                    line = line.strip()
+                    # Check if the line contains the pattern '"text":'
+                    if '"text":' in line:
+                        # Find the starting position of the value enclosed in double quotes
+                        start_quote_index = line.find('"', line.find('"text":') + len('"text":')) + 1
+                        # Find the ending position of the value enclosed in double quotes
+                        end_quote_index = line.find('"', start_quote_index)
+                        # Extract the value between the double quotes, which is the translation key
+                        text_value = line[start_quote_index:end_quote_index]
+
+                        # Add the extracted translation key to the set of extracted strings
+                        with self.lock:
+                            self.extracted_strings.add(text_value)
         except OSError as e:
             if self.logger:
                 self.logger.error(f"Error opening file {file_path}: {str(e)}")
-
-    def _extract_text_from_gui_data(self, gui_data):
-        if isinstance(gui_data, dict):
-            for key in gui_data.values():
-                if isinstance(key, dict):
-                    if "widget_properties" in key and "text" in key["widget_properties"]:
-                        with self.lock:
-                            self.extracted_strings.add(key["widget_properties"]["text"])
-                    self._extract_text_from_gui_data(key.get("children", {}))
 
     def _merge_extracted_strings_with_source_file(self):
         with self.lock:
@@ -100,6 +101,12 @@ class LocaleUpdater:
         source_locale_data = self._load_json_locale_file(self.source_locale_file)
         if source_locale_data is None:
             return
+
+        for string in self.extracted_strings:
+            string_exists = any(string in section for section in source_locale_data.values())
+            if string_exists:
+                print(f"String '{string}' already exists in source locale file: {self.source_locale_file}")
+                continue
 
         for string in self.extracted_strings:
             if not any(string in section for section in source_locale_data.values()):
