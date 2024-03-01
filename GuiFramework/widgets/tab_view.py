@@ -8,6 +8,8 @@ class TabView(CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.window = master
 
+        self.pack(fill='both', expand=True)
+
         # Vertical expansion weights
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
@@ -22,6 +24,12 @@ class TabView(CTkFrame):
 
         self.btn_to_frame = {}
         self.title_to_btn = {}
+
+    def show(self):
+        self.pack(fill='both', expand=True)
+
+    def hide(self):
+        self.pack_forget()
 
     def add_tab(self, frame, title):
         self._create_tab_button(frame, title)

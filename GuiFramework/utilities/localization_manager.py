@@ -19,7 +19,7 @@ class LocalizationManager:
     def __init__(self, locales_dir=None, active_language=None, fallback_language=None, lazy_load=True, logger=None):
         self.logger = logger or setup_default_logger("LocalizationManager")
         self.lock = threading.RLock()
-        self.observers = []
+        self.observers = {"before_subs_notify": [], "lang_update": [], "after_subs_notify": []}
         self.locale_dir = Path(locales_dir) or Path(self.DEFAULT_LOCALES_DIR)
         if not self.locale_dir.exists() or not self.locale_dir.is_dir():
             self.locale_dir.mkdir(parents=True, exist_ok=True)
@@ -66,7 +66,11 @@ class LocalizationManager:
                     self.fallback_language = normalized_language_code
 
                 self.logger.info(f"{language_type.capitalize()} language set to: {normalized_language_code}")
-                self._notify_observers(normalized_language_code, language_type)
+
+                if language_type == "active":
+                    self._notify_observers(normalized_language_code, "before_subs_notify")
+                    self._notify_observers(normalized_language_code, "lang_update")
+                    self._notify_observers(normalized_language_code, "after_subs_notify")
 
             except KeyError as e:
                 self.logger.warning(f"{e} Falling back to default {language_type} language.")
@@ -101,7 +105,7 @@ class LocalizationManager:
             return "key_error"
         with self.lock:
             if not target_language or target_language.lower() == self.active_language.lower():
-                return self.dictionaries[self.active_language].get(key, key)
+                return self.dictionaries[self.active_language].get(key.lower(), key)
             target_language = self.language_map.get(target_language.lower(), None)
             if target_language:
                 result = _load_and_localize(target_language, key)
@@ -132,13 +136,20 @@ class LocalizationManager:
             translation = translation.replace(f"{{placeholder}}", str(value))
         return translation
 
-    def subscribe(self, observer):
-        """Subscribes an observer to language updates."""
+    def subscribe(self, observer, event_types):
+        """
+        Subscribes an observer to language updates.
+        :param observer: The method that will be called when the event occurs.
+        :param event_types: A list of event types to subscribe to, e.g., ["before_subs_notify", "lang_update", "after_subs_notify"]
+        """
         with self.lock:
-            if not callable(getattr(observer, "on_language_updated", None)):
+            if not all(callable(getattr(observer, f"on_language_updated", None)) for event in event_types):
                 observer_name = observer.__class__.__name__
-                raise ValueError(f"Observer must implement 'on_language_updated' method: {observer_name}")
-            self.observers.append(observer)
+                raise ValueError(f"Observer must implement language update methods for subscribed events: {observer_name}")
+            for event_type in event_types:
+                if event_type not in self.observers:
+                    self.observers[event_type] = []
+                self.observers[event_type].append(observer)
 
     def unsubscribe(self, observer):
         """Unsubscribes an observer from language updates."""
@@ -146,10 +157,14 @@ class LocalizationManager:
             self.observers.remove(observer)
             self.logger.info(f"Unsubscribed observer: {observer}")
 
-    def _notify_observers(self, language_code, change_type):
-        """Notifies all observers that the language has been updated."""
-        for observer in self.observers:
-            observer.on_language_updated(language_code, change_type)
+    def _notify_observers(self, language_code, event_type):
+        """
+        Notifies all observers about a language update event.
+        :param language_code: The language code that was updated.
+        :param event_type: The type of event that occurred, e.g., "before_subs_notify", "lang_update", "after_subs_notify"
+        """
+        for observer in self.observers[event_type]:
+            getattr(observer, f"on_language_updated")(language_code, event_type)
 
     def _process_file(self, file_path):
         try:
