@@ -6,6 +6,7 @@ import threading
 from babel import Locale
 from pathlib import Path
 from collections import defaultdict
+from .utils import setup_default_logger
 
 
 class LocalizationManager:
@@ -15,7 +16,7 @@ class LocalizationManager:
     def __init__(self, locales_dir=None, default_language=None, logger=None):
         self.locale_dir = Path(locales_dir) or Path(self.DEFAULT_LOCALES_DIR)
         self.language = default_language or self.DEFAULT_LANGUAGE
-        self.logger = logger
+        self.logger = logger or setup_default_logger("LocalizationManager")
         self.language_map = self._map_languages()
         self.dictionaries = defaultdict(dict)
         self.reverse_dictionaries = defaultdict(dict)
@@ -46,14 +47,22 @@ class LocalizationManager:
     def available_languages(self):
         return [Locale.parse(lang).display_name for lang in self.dictionaries]
 
-    def translate(self, key):
+    def translate(self, key, language_code=None):
         if not key:
             return key
-        if key in self.active_dict:
-            return self.active_dict[key]
-        else:
-            key = self.get_key(key)
-            return self.active_dict.get(key, key)
+
+        with self.lock:
+            actual_key = key
+
+            if key not in self.active_dict:
+                actual_key = self.get_key(key)
+
+            if language_code:
+                language_code = self.language_map.get(language_code.lower(), None)
+                if language_code and language_code in self.dictionaries:
+                    return self.dictionaries[language_code].get(actual_key, key)
+
+            return self.active_dict.get(actual_key, key)
 
     def translate_with_params(self, key, **params):
         translation = self.translate(key)
