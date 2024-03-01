@@ -13,7 +13,7 @@ def setup_default_logger(logger_name='default_logger'):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.WARNING)
     return logger
 
 

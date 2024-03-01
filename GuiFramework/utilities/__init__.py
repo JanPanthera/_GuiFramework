@@ -5,6 +5,7 @@ from .file_ops import *
 from .utils import *
 from .gui_utils import *
 from .helper_ctk import *
+from .bimap import *
 
 from .config_manager import ConfigManager
 from .locale_updater import LocaleUpdater
