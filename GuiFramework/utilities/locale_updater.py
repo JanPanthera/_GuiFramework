@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import copy
 import threading
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -148,7 +149,7 @@ class LocaleUpdater:
                     for key in target_locale_data[section]:
                         target_keys[key] = target_locale_data[section][key]
 
-                new_target_locale_data = source_locale_data.copy()
+                new_target_locale_data = copy.deepcopy(source_locale_data)
                 for section in new_target_locale_data:
                     for key in target_keys:
                         if key in new_target_locale_data[section]:

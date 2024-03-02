@@ -96,38 +96,47 @@ class LocalizationManager:
 
     def localize(self, key, target_language=None):
         """Localizes a key to the active language or a specified target language."""
-        def _load_and_localize(language_code, key):
-            if language_code not in self.dictionaries:
-                self._load_language_dict_from_file(language_code)
-            return self.dictionaries[language_code].get(key, key)
         if not key:
             self.logger.warning("Localization key is empty")
             return "key_error"
+
+        def translate(lookup_key, languages):
+            """Attempts to translate the key using the provided list of languages."""
+            for lang in languages:
+                if lang not in self.dictionaries and lang != self.fallback_language:
+                    self._load_language_dict_from_file(lang)
+                translation = self.dictionaries[lang].get(lookup_key)
+                if translation:
+                    return translation
+            return None
+
         with self.lock:
-            if not target_language or target_language.lower() == self.active_language.lower():
-                return self.dictionaries[self.active_language].get(key.lower(), key)
-            target_language = self.language_map.get(target_language.lower(), None)
-            if target_language:
-                result = _load_and_localize(target_language, key)
-                if result != key:
-                    return result
-            return self.dictionaries[self.active_language].get(key, key)
+            target_language = (target_language or self.active_language).lower()
+            language_preferences = [target_language, self.active_language.lower(), self.fallback_language]
+
+            translation = translate(key, language_preferences)
+            if translation:
+                return translation
+
+            reverse_key = self.reverse_localize(key)
+            if reverse_key != key:
+                translation = translate(reverse_key, language_preferences)
+                if translation:
+                    return translation
+
+        return key
 
     def reverse_localize(self, translation):
         """Attempts to reverse localize a translation to the original key."""
-        def _load_and_reverse_localize(language_code, translation):
-            if language_code not in self.dictionaries:
-                self._load_language_dict_from_file(language_code)
-            reverse_dict = self.dictionaries[language_code].inverse()
-            return reverse_dict.get(translation, translation)
         with self.lock:
-            if translation in self.dictionaries[self.active_language].inverse():
-                return self.dictionaries[self.active_language].inverse().get(translation, translation)
-            results = [_load_and_reverse_localize(lang, translation) for lang in self.language_map.values()]
-            for result in results:
+            for lang in [self.active_language] + list(self.language_map.values()):
+                if lang not in self.dictionaries:
+                    self._load_language_dict_from_file(lang)
+                reverse_dict = self.dictionaries[lang].inverse()
+                result = reverse_dict.get(translation, translation)
                 if result != translation:
                     return result
-            return translation
+        return translation
 
     def localize_with_params(self, key, *args):
         """
