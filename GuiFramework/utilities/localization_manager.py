@@ -129,11 +129,22 @@ class LocalizationManager:
                     return result
             return translation
 
-    def localize_with_params(self, key, **params):
-        """Localizes a key to the active language with parameters."""
-        translation = self.localize(key)
-        for placeholder, value in params.items():
-            translation = translation.replace(f"{{placeholder}}", str(value))
+    def localize_with_params(self, key, *args):
+        """
+        Localizes a key to the active language with parameters using positional
+        arguments for string formatting.
+
+        :param key: The localization key.
+        :param args: The arguments to substitute into the localized string.
+        :return: The localized string with parameters substituted.
+        """
+        template = self.localize(key)
+
+        try:
+            translation = template.format(*args)
+        except IndexError as e:
+            self.logger.error(f"Error formatting translation: {e}")
+            translation = template
         return translation
 
     def subscribe(self, observer, event_types):
