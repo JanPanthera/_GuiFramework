@@ -1,4 +1,4 @@
-# helper_ctk.py
+# utilities/helper_ctk.py
 
 import customtkinter as ctk
 
