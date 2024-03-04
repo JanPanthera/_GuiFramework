@@ -1,6 +1,5 @@
 # window.py / GuiFramework
 
-import ctypes
 import customtkinter as ctk
 from enum import Enum, auto
 from GuiFramework.utilities import get_dpi_scaling_factor
@@ -34,6 +33,7 @@ class Window(ctk.CTk):
     # Initialization and Configuration
     def __init__(self, logger=None, **kwargs):
         super().__init__()
+        self.attributes('-alpha', 0)
         self.WINDOW_SETTINGS = {
             "window_title": "No Title Provided",
             "window_icon": None,
@@ -52,6 +52,7 @@ class Window(ctk.CTk):
         self.configs = {**self.WINDOW_SETTINGS, **kwargs}
         self.initialized = False
         self._setup_window()
+        self.after(1000, self.attributes, '-alpha', 1)
 
     def _setup_window(self):
         self.hide()
