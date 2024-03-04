@@ -43,4 +43,4 @@ class GuiManager:
 
     def _notify(self):
         for observer in self.observers:
-            observer.set_widget_references()
+            observer.on_gui_build()
