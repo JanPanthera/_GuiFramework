@@ -96,9 +96,12 @@ class LocalizationManager:
 
     def localize(self, key, target_language=None):
         """Localizes a key to the active language or a specified target language."""
-        if not key:
+        if not key or not isinstance(key, str):
+            if key == "":
+                return key
             self.logger.warning("Localization key is empty")
             return "key_error"
+        
 
         def translate(lookup_key, languages):
             """Attempts to translate the key using the provided list of languages."""

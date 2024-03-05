@@ -1,27 +1,31 @@
-# utilities/utils.py
+# GuiFramework/utilities/utils.py
 
 import time
 import ctypes
 import logging
 
+from GuiFramework.utilities.logger import CustomLogger, LOG_LEVEL
+
+
 DEBOUNCE_DELAY = 100
 
 
 def setup_default_logger(logger_name='default_logger'):
-    logger = logging.getLogger(logger_name)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.WARNING)
-    return logger
+    """Setup the default logger."""
+    return CustomLogger(
+        log_name="Default.log",
+        log_path="logs",
+        textbox=None,
+        log_level=LOG_LEVEL.DEBUG,
+        max_log_size=10 << 20,
+        backup_count=1,
+        rotate_on_start=True,
+        append_datetime_to_rolled_files=True
+    )
 
 
 def get_dpi_scaling_factor(logger=None):
-    """
-    Function to get the DPI scaling factor for the current system.
-    Designed to run on Windows. If not on Windows, returns 1.0.
-    """
+    """Get the DPI scaling factor for the current system."""
     logger = logger or setup_default_logger()
     scaling_factor = 1.0
 
@@ -42,11 +46,8 @@ def get_dpi_scaling_factor(logger=None):
     return scaling_factor
 
 
-def get_dpi_scaling_factor():
-    return ctypes.windll.user32.GetDpiForSystem() / 96
-
-
 def handle_error(logger, message):
+    """Handle error messages."""
     if logger is not None:
         logger.error(message)
     else:
@@ -54,6 +55,7 @@ def handle_error(logger, message):
 
 
 def handle_warning(logger, message):
+    """Handle warning messages."""
     if logger is not None:
         logger.warning(message)
     else:
@@ -61,20 +63,26 @@ def handle_warning(logger, message):
 
 
 class Debouncer:
+    """Class for debouncing function calls."""
+
     def __init__(self, delay=0.1):
-        self.delay = delay  # The minimum delay between calls
+        """Initialize Debouncer with a delay."""
+        self.delay = delay
         self.callback = None
-        self.next_call_time = 0  # The earliest time the next call is allowed
+        self.next_call_time = 0
 
     def __call__(self, callback):
+        """Call the debounced function."""
         self.callback = callback
         return self._debounced
 
     def _debounced(self, *args, **kwargs):
+        """Debounce the function call."""
         current_time = time.time()
         if current_time >= self.next_call_time:
             self.next_call_time = current_time + self.delay
             self.callback(*args, **kwargs)
 
     def cancel(self):
-        self.next_call_time = 0  # Reset the timer, effectively cancelling the debounce delay
+        """Cancel the debounce delay."""
+        self.next_call_time = 0

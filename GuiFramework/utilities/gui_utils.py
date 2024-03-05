@@ -25,7 +25,7 @@ def update_language(gui_manager, localize_func, frame_key, logger=None):
         logger.error(f"Failed to update language: {e}")
 
 
-def set_widget_references(class_ref, frame_key, gui_manager, logger=None):
+def on_gui_build(class_ref, frame_key, gui_manager, logger=None):
     """Sets the widget references for the given frame."""
     logger = logger or setup_default_logger()
     try:
