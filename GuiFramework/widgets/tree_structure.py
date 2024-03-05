@@ -1,32 +1,41 @@
 import os
 import customtkinter as ctk
 
-
+# TODO: icon optionally a image file
 class Node(ctk.CTkButton):
-    def __init__(self, parent, path, level=1, *args, **kwargs):
-        super().__init__(parent, text=os.path.basename(path), anchor='nw', corner_radius=0, *args, **kwargs)
+    def __init__(self, parent, path, icon=None, level=1, *args, **kwargs):
+        self.base_container = ctk.CTkFrame(parent, fg_color="transparent")
+        self.base_container.pack(padx=0, pady=0, anchor='nw')
+
+        if icon:
+            self.icon = ctk.CTkLabel(self.base_container, text=icon, fg_color="transparent", anchor='nw')
+            self.icon.pack(side='left', padx=(0, 5), pady=0, anchor='nw')
+
+        super().__init__(self.base_container, text=os.path.basename(path), anchor='nw', corner_radius=0, *args, **kwargs)
+        self.pack(side='left', padx=0, pady=0, anchor='nw')
         if level == 0:
             self.show()
         self.level = level
 
     def show(self):
-        self.pack(padx=2, pady=2, anchor='nw')
+        self.base_container.pack(padx=2, pady=2, anchor='nw')
 
     def hide(self):
-        self.pack_forget()
+        self.base_container.pack_forget()
 
 
 class FileNode(Node):
     def __init__(self, parent, file_path, level=1, *args, **kwargs):
-        super().__init__(parent, file_path, level, hover=False, fg_color="transparent", *args, **kwargs)
+        super().__init__(parent, file_path, icon="📄", level=level, hover=False, fg_color="transparent", *args, **kwargs)
 
 
 class FolderNode(Node):
     def __init__(self, parent, folder_path, level=1, *args, **kwargs):
         self.base_container = ctk.CTkFrame(parent, fg_color="transparent")
         self.base_container.pack(padx=0, pady=0, anchor='nw')
+
         self.subnodes_container = ctk.CTkFrame(self.base_container, fg_color="transparent")
-        super().__init__(self.base_container, folder_path, level, fg_color="transparent", *args, **kwargs)
+        super().__init__(self.base_container, folder_path, icon="📁", level=level, fg_color="transparent", *args, **kwargs)
         self.configure(command=self.toggle_subnodes)
         self.subnodes = []
         self.expanded = False
