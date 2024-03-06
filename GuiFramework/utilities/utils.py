@@ -10,10 +10,10 @@ from GuiFramework.utilities.logger import CustomLogger, LOG_LEVEL
 DEBOUNCE_DELAY = 100
 
 
-def setup_default_logger(logger_name='default_logger'):
+def setup_default_logger(log_name='default_logger'):
     """Setup the default logger."""
     return CustomLogger(
-        log_name="Default.log",
+        log_name=log_name if log_name.endswith('.log') else f"{log_name}.log",
         log_path="logs",
         textbox=None,
         log_level=LOG_LEVEL.DEBUG,
