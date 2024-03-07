@@ -1,6 +1,9 @@
+# GuiFramework/widgets/tree_view/base_tree_view.py
+
 import customtkinter as ctk
 
 from GuiFramework.utilities.utils import setup_default_logger
+from GuiFramework.utilities.event_manager import EventManager
 from abc import abstractmethod
 
 
@@ -41,12 +44,16 @@ class BaseNode:
         if self.icon_label is not None:
             self.icon_label.configure(text=new_icon_text)
 
+    def rename(self, new_name):
+        """Renames the node."""
+        self.controller.configure(text=new_name)
+        self.name = new_name
+
 
 class BaseFileNode(BaseNode):
     """Base class for file nodes."""
 
-    def __init__(self, tree_view_instance, parent, name, data=None, icon=None):
-        self.tree_view_instance = tree_view_instance
+    def __init__(self, parent, name, data=None, icon=None):
         super().__init__(parent, name, data, icon)
         self.selected = False
         self.controller.configure(command=self.on_select)
@@ -56,8 +63,7 @@ class BaseFileNode(BaseNode):
         if self.selected:
             self.deselect()
         else:
-            if not self.tree_view_instance.multi_select:
-                self.tree_view_instance.deselect_all()
+            EventManager.notify("deselect_all_files", single_select=True)
             self.select()
 
     def select(self):
@@ -65,19 +71,20 @@ class BaseFileNode(BaseNode):
         if not self.selected and self.visible:
             self.selected = True
             self.controller.configure(fg_color="#4d4d4d")
+            EventManager.notify("file_selected", self)
 
     def deselect(self):
         """Deselects the file node."""
         if self.selected and self.visible:
             self.selected = False
             self.controller.configure(fg_color="transparent")
+            EventManager.notify("file_deselected", self)
 
 
 class BaseFolderNode(BaseNode):
     """Base class for folder nodes."""
 
-    def __init__(self, tree_view_instance, parent, name, data=None, expanded_icon=None, collapsed_icon=None):
-        self.tree_view_instance = tree_view_instance
+    def __init__(self, parent, name, data=None, expanded_icon=None, collapsed_icon=None):
         self.expanded_icon = expanded_icon or "▼"
         self.collapsed_icon = collapsed_icon or "▶"
 
@@ -86,7 +93,7 @@ class BaseFolderNode(BaseNode):
 
         self.child_nodes_container = ctk.CTkFrame(self.base_folder_node_container, fg_color="transparent")
 
-        super().__init__(self.base_folder_node_container, name, data, collapsed_icon)
+        super().__init__(self.base_folder_node_container, name, data, self.collapsed_icon)
         self.controller.configure(command=self.toggle_child_nodes)
 
         self.child_nodes = []
@@ -97,12 +104,24 @@ class BaseFolderNode(BaseNode):
     def populate_child_nodes(self, container):
         raise NotImplementedError
 
+    def add_child_node(self, child_node):
+        """Adds a child node to the folder node."""
+        self.child_nodes.append(child_node)
+        EventManager.notify("child_node_added", child_node)
+
+    def remove_child_node(self, child_node):
+        """Removes a child node from the folder node."""
+        self.child_nodes.remove(child_node)
+        EventManager.notify("child_node_removed", child_node)
+
     def toggle_child_nodes(self):
         """Toggles the visibility of the child nodes."""
         if self.expanded:
             self.hide_child_nodes()
+            EventManager.notify("folder_collapsed", self)
         else:
             self.show_child_nodes()
+            EventManager.notify("folder_expanded", self)
 
     def show_child_nodes(self):
         """Shows the child nodes."""
@@ -131,6 +150,7 @@ class BaseTreeView(ctk.CTkScrollableFrame):
     def __init__(self, parent, multi_select=False, logger=None, *args, **kwargs):
         self.logger = logger or setup_default_logger(log_name="GuiFramework")
         super().__init__(parent, *args, **kwargs)
+        EventManager.subscribe("deselect_all_files", self.deselect_all)
         self.multi_select = multi_select
         self.root_node = None
 
@@ -153,7 +173,9 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         else:
             self.logger.warning("Root Node must be set before selecting all nodes.")
 
-    def deselect_all(self):
+    def deselect_all(self, **kwargs):
+        if kwargs.get("single_select", False) and self.multi_select:
+            return
         if self.root_node:
             self._deselect_all(self.root_node)
         else:
