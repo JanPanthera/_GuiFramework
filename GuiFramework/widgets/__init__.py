@@ -1,4 +1,4 @@
-# __init__.py ~ GuiFramework/widgets/__init__.py
+# GuiFramework/widgets/__init__.py
 
 from .tab_view import TabView
 from .custom_textbox import CustomTextbox

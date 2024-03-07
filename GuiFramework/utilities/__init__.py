@@ -12,3 +12,4 @@ from .locale_updater import LocaleUpdater
 from .localization_manager import LocalizationManager
 from .project_archiver import ProjectArchiver
 from .executable_creator import ExecutableCreator
+from .event_manager import EventManager
