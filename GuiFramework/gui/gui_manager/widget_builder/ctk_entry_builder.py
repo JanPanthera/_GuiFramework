@@ -8,7 +8,7 @@ from GuiFramework.utilities import setup_default_logger
 class CtkEntryBuilder(AbstractCtkBuilder):
     def __init__(self, config_manager=None, localize_func=None, logger=None):
         super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger(logger_name="CtkEntryBuilder", log_directory="logs/GuiFramework")
+        self.logger = logger or setup_default_logger(log_name="CtkEntryBuilder", log_directory="logs/GuiFramework")
 
     @property
     def widget_type(self):

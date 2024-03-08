@@ -1,12 +1,12 @@
-# gui_manager.py ~ GuiFramework/gui/gui_manager/gui_manager.py
+# GuiFramework/gui/gui_manager/gui_manager.py
 
-from .gui_builder import GuiBuilder
-from ...utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.gui_builder import GuiBuilder
+from GuiFramework.utilities import setup_default_logger
 
 
 class GuiManager:
     def __init__(self, logger=None):
-        self.logger = logger or setup_default_logger('GuiManager')
+        self.logger = logger or setup_default_logger(log_name="GuiManager", log_directory="logs/GuiFramework")
         self.gui_builder = GuiBuilder(self.logger)
         self.observers = []
         self.components = {}

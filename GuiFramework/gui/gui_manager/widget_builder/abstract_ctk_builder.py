@@ -9,7 +9,7 @@ from GuiFramework.utilities import setup_default_logger
 class AbstractCtkBuilder(AbstractBuilder):
     def __init__(self, config_manager=None, localize_func=None, logger=None):
         super().__init__()
-        self.logger = logger or setup_default_logger(logger_name="AbstractCtkBuilder", log_directory="logs/GuiFramework")
+        self.logger = logger or setup_default_logger(log_name="AbstractCtkBuilder", log_directory="logs/GuiFramework")
         self.config_manager = config_manager
         self.loc = localize_func
         self.property_handlers = {

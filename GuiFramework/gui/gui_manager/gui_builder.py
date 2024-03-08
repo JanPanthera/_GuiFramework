@@ -1,12 +1,12 @@
-# gui_builder.py ~ GuiFramework/gui/gui_manager/gui_builder.py
+# GuiFramework/gui/gui_manager/gui_builder.py
 
 import json
-from ...utilities import setup_default_logger
+from GuiFramework.utilities import setup_default_logger
 
 
 class GuiBuilder:
     def __init__(self, logger=None):
-        self.logger = logger or setup_default_logger('GuiBuilder')
+        self.logger = logger or setup_default_logger(log_name="GuiBuilder", log_directory="logs/GuiFramework")
         self.widget_builders = {}
 
     def register_widget_builder(self, widget_builder):
@@ -14,7 +14,7 @@ class GuiBuilder:
 
     def build(self, master, config_path, instance):
         try:
-            with open(config_path, 'r') as config_file:
+            with open(config_path, "r") as config_file:
                 config = json.load(config_file)
             elements = self._process_elements(master, config, instance)
             return elements
