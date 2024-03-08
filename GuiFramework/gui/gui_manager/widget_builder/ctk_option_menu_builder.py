@@ -1,18 +1,18 @@
-# ctk_option_menu_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/ctk_option_menu_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/ctk_option_menu_builder.py
 
 from customtkinter import CTkOptionMenu
-from .abstract_ctk_builder import AbstractCtkBuilder
-from ....utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
+from GuiFramework.utilities import setup_default_logger
 
 
 class CtkOptionMenuBuilder(AbstractCtkBuilder):
     def __init__(self, config_manager=None, localize_func=None, logger=None):
         super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger('CtkOptionMenuBuilder')
+        self.logger = logger or setup_default_logger(logger_name="CtkOptionMenuBuilder", log_directory="logs/GuiFramework")
 
     @property
     def widget_type(self):
-        return 'CTkOptionMenu'
+        return "CTkOptionMenu"
 
     def create_widget(self, master, widget_properties, instance):
         try:

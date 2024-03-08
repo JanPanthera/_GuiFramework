@@ -1,18 +1,18 @@
-# ctk_frame_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/ctk_frame_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/ctk_frame_builder.py
 
 from customtkinter import CTkFrame
-from .abstract_ctk_builder import AbstractCtkBuilder
-from ....utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
+from GuiFramework.utilities import setup_default_logger
 
 
 class CtkFrameBuilder(AbstractCtkBuilder):
     def __init__(self, config_manager=None, localize_func=None, logger=None):
         super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger('CtkFrameBuilder')
+        self.logger = logger or setup_default_logger(logger_name="CtkFrameBuilder", log_directory="logs/GuiFramework")
 
     @property
     def widget_type(self):
-        return 'CTkFrame'
+        return "CTkFrame"
 
     def create_widget(self, master, widget_properties, instance):
         try:

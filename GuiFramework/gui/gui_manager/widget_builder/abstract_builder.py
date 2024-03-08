@@ -1,4 +1,4 @@
-# abstract_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/abstract_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/abstract_builder.py
 
 import abc
 

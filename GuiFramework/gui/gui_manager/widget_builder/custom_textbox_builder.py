@@ -1,18 +1,18 @@
-# ctk_custom_textbox_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/ctk_custom_textbox_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/ctk_custom_textbox_builder.py
 
 from GuiFramework.widgets import custom_textbox as ct
-from .abstract_ctk_builder import AbstractCtkBuilder
-from ....utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
+from GuiFramework.utilities import setup_default_logger
 
 
 class CustomTextboxBuilder(AbstractCtkBuilder):
     def __init__(self, config_manager=None, localize_func=None, logger=None):
         super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger('CustomTextboxBuilder')
+        self.logger = logger or setup_default_logger(logger_name="CustomTextboxBuilder", log_directory="logs/GuiFramework")
 
     @property
     def widget_type(self):
-        return 'CustomTextbox'
+        return "CustomTextbox"
 
     def create_widget(self, master, widget_properties, instance):
         try:
