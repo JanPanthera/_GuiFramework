@@ -1,4 +1,4 @@
-# locale_updater.py
+# GuiFramework/utilities/locale_updater.py
 
 import os
 import re
@@ -8,6 +8,8 @@ import threading
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
+
+from GuiFramework.utilities.utils import setup_default_logger
 
 
 class LocaleUpdater:
@@ -30,7 +32,7 @@ class LocaleUpdater:
         self.extracted_strings = set()
         self.lock = threading.RLock()
 
-        self.logger = logger
+        self.logger = logger or setup_default_logger(log_name="LocaleUpdater", log_directory="logs/GuiFramework")
 
     def update_settings(self, **kwargs):
         with self.lock:

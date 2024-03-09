@@ -1,4 +1,4 @@
-# window.py / GuiFramework
+# GuiFramework/gui/window.py
 
 import customtkinter as ctk
 from enum import Enum, auto
@@ -33,7 +33,7 @@ class Window(ctk.CTk):
     # Initialization and Configuration
     def __init__(self, logger=None, **kwargs):
         super().__init__()
-        self.attributes('-alpha', 0)
+        self.attributes("-alpha", 0)
         self.WINDOW_SETTINGS = {
             "window_title": "No Title Provided",
             "window_icon": None,
@@ -48,11 +48,11 @@ class Window(ctk.CTk):
             "on_close_callback": None,
             "lazy_init": False
         }
-        self.logger = logger or setup_default_logger()
+        self.logger = logger or setup_default_logger(log_name="Window", log_directory="logs/GuiFramework")
         self.configs = {**self.WINDOW_SETTINGS, **kwargs}
         self.initialized = False
         self._setup_window()
-        self.after(1000, self.attributes, '-alpha', 1)
+        self.after(1000, self.attributes, "-alpha", 1)
 
     def _setup_window(self):
         self.hide()
@@ -102,25 +102,21 @@ class Window(ctk.CTk):
         except Exception as e:
             self.logger.error(f"Error applying settings: {e}")
         self.initialized = True
-        self.logger.info("Window configuration applied.")
 
     # UI Adjustment Methods
     def show(self):
         if not self.initialized:
             self.apply_configuration()
         self.deiconify()
-        self.logger.info("Window shown.")
 
     def hide(self):
         self.withdraw()
-        self.logger.info("Window hidden.")
 
     def set_window_title(self, title):
         try:
             self.title(title)
-            self.logger.info(f"Window title set to '{title}'.")
         except Exception as e:
-            self.logger.error(f"Failed to set window title to '{title}': {e}")
+            self.logger.error(f"Failed to set window title to "{title}": {e}")
 
     def set_window_icon(self, icon_path):
         if icon_path is None:
@@ -128,7 +124,6 @@ class Window(ctk.CTk):
             return
         try:
             self.iconbitmap(icon_path)
-            self.logger.info(f"Window icon set to {icon_path}")
         except Exception as e:
             self.logger.error(f"Failed to set window icon from {icon_path}: {e}")
 
@@ -140,7 +135,6 @@ class Window(ctk.CTk):
             pos_x, pos_y = self.window_position
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window size set to {self.window_size}.")
         except ValueError:
             self.logger.error(f"Invalid window size values: size={size}. Must be integers.")
         except Exception as e:
@@ -155,7 +149,6 @@ class Window(ctk.CTk):
             self.window_position = (pos_x, pos_y)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window position set to {self.window_position}.")
         except ValueError:
             self.logger.error(f"Invalid window position values: position={position}. Must be integers.")
         except Exception as e:
@@ -170,7 +163,6 @@ class Window(ctk.CTk):
             pos_x, pos_y = max(int(position[0]), 0), max(int(position[1]), 0)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window geometry set to {self.window_size}+{self.window_position}.")
         except ValueError:
             self.logger.error(f"Invalid window geometry values: size={size}, position={position}. Must be integers.")
         except Exception as e:
@@ -209,46 +201,40 @@ class Window(ctk.CTk):
     def _enable_fullscreen(self):
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.state('zoomed')
-        self.attributes('-fullscreen', True)
+        self.state("zoomed")
+        self.attributes("-fullscreen", True)
         self.update()
-        self.logger.info("Fullscreen mode enabled.")
 
     def _enable_fullscreen_borderless(self):
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.state('zoomed')
+        self.state("zoomed")
         self.overrideredirect(True)
         self.update()
-        self.logger.info("Borderless fullscreen mode enabled.")
 
     def _enable_borderless(self):
         self.overrideredirect(True)
         self.update()
-        self.logger.info("Borderless mode enabled.")
 
     def _maximize_window(self):
-        self.state('zoomed')
+        self.state("zoomed")
         self.update()
-        self.logger.info("Maximized mode enabled.")
 
     def _restore_normal(self):
-        was_fullscreen = self.attributes('-fullscreen')
-        self.state('normal')
+        was_fullscreen = self.attributes("-fullscreen")
+        self.state("normal")
         self.overrideredirect(False)
         self._windows_set_titlebar_color(self._get_appearance_mode())
         if was_fullscreen:
-            self.attributes('-fullscreen', False)
+            self.attributes("-fullscreen", False)
         self.set_window_geometry(self.window_size_before_fullscreen, self.window_position_before_fullscreen)
         self.update()
-        self.logger.info("Window restored to normal mode.")
 
     def set_window_transparency(self, transparency):
         try:
             if not 0.0 <= transparency <= 1.0:
                 raise ValueError("Transparency value must be between 0.0 and 1.0.")
-            self.attributes('-alpha', transparency)
-            self.logger.info(f"Window transparency set to {transparency}.")
+            self.attributes("-alpha", transparency)
         except ValueError as ve:
             self.logger.error(ve)
         except Exception as e:
@@ -256,16 +242,14 @@ class Window(ctk.CTk):
 
     def set_always_on_top(self, always_on_top):
         try:
-            self.attributes('-topmost', always_on_top)
-            state = 'enabled' if always_on_top else 'disabled'
-            self.logger.info(f"Always-on-top mode {state}.")
+            self.attributes("-topmost", always_on_top)
+            state = "enabled" if always_on_top else "disabled"
         except Exception as e:
             self.logger.error(f"Failed to set always-on-top mode: {e}")
 
     def set_ui_theme(self, theme):
         try:
             ctk.set_appearance_mode(theme)
-            self.logger.info(f"UI theme set to {theme}.")
         except Exception as e:
             self.logger.error(f"Failed to set UI theme to {theme}: {e}")
             self.set_ui_theme("system")
@@ -273,7 +257,6 @@ class Window(ctk.CTk):
     def set_ui_color_theme(self, color_theme):
         try:
             ctk.set_default_color_theme(color_theme)
-            self.logger.info(f"UI color theme set to {color_theme}.")
         except Exception as e:
             self.logger.error(f"Failed to set UI color theme to {color_theme}: {e}")
             self.set_ui_color_theme("blue")
@@ -281,24 +264,21 @@ class Window(ctk.CTk):
     def set_window_resizeable(self, resizeable):
         try:
             self.resizable(resizeable, resizeable)
-            state = 'enabled' if resizeable else 'disabled'
-            self.logger.info(f"Window resizeability {state}.")
+            state = "enabled" if resizeable else "disabled"
         except Exception as e:
             self.logger.error(f"Failed to change window resizeability to {resizeable}: {e}")
 
     def set_high_dpi(self, enable):
         if enable:
-            if hasattr(ctk, 'activate_automatic_dpi_awareness'):
+            if hasattr(ctk, "activate_automatic_dpi_awareness"):
                 ctk.activate_automatic_dpi_awareness()
                 self.high_dpi_scale = get_dpi_scaling_factor()
-                self.logger.info(f"High DPI mode activated. Scale: {self.high_dpi_scale}")
             else:
                 self.logger.error("Reactivating Automatic DPI awareness is not supported on this customtkinter repository.")
         else:
             ctk.deactivate_automatic_dpi_awareness()
             self.high_dpi_scale = 1.0
             self.update()
-            self.logger.info(f"High DPI mode deactivated.")
 
     # Event Callback and Handling
     def set_window_event_callback(self, callback):
@@ -306,7 +286,6 @@ class Window(ctk.CTk):
             if not callable(callback):
                 raise ValueError("Provided callback is not callable.")
             self.on_window_close_callback = callback
-            self.logger.info("Window event callback set successfully.")
         except ValueError as ve:
             self.logger.error(ve)
         except Exception as e:
@@ -324,7 +303,6 @@ class Window(ctk.CTk):
         try:
             if self.window_size != (self.winfo_width(), self.winfo_height()):
                 self.window_size = (self.winfo_width(), self.winfo_height())
-                self.logger.info(f"Window resized to {self.window_size}")
         except Exception as e:
             self.logger.error(f"Error handling window resize: {e}")
 
@@ -332,21 +310,19 @@ class Window(ctk.CTk):
         try:
             if self.window_position != (self.winfo_x(), self.winfo_y()):
                 self.window_position = (self.winfo_x(), self.winfo_y())
-                self.logger.info(f"Window moved to {self.window_position}")
         except Exception as e:
             self.logger.error(f"Error handling window move: {e}")
 
     def _on_focus_in(self, event):
-        self.logger.info("Window gained focus.")
+        pass
 
     def _on_focus_out(self, event):
-        self.logger.info("Window lost focus.")
+        pass
 
     def _on_window_close(self):
         if self.on_window_close_callback:
             self.on_window_close_callback()
         self.destroy()
-        self.logger.info("Window closed.")
 
     # Utility and Helper Methods
     def get_size(self):

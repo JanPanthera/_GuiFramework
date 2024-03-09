@@ -1,11 +1,14 @@
+# GuiFramework/utilities/event_manager.py
+
+import threading
+
 from collections import defaultdict
 from GuiFramework.utilities.utils import setup_default_logger
-import threading
 
 
 class EventManager:
     """A class for managing events and their subscribers."""
-    logger = setup_default_logger("EventManager")
+    logger = setup_default_logger(log_name="EventManager", log_directory="logs/GuiFramework")
     subscribers = defaultdict(set)
     lock = threading.RLock()
 

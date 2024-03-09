@@ -1,8 +1,10 @@
-# config_manager.py
+# GuiFramework/utilities/config_manager.py
 
 import os
 import configparser
 from pathlib import Path
+
+from GuiFramework.utilities.utils import setup_default_logger
 
 
 class ConfigManager():
@@ -22,7 +24,7 @@ class ConfigManager():
         self.type_creators = {}
         self.type_savers = {}
         self.default_values = default_config_creator_func()
-        self.logger = logger
+        self.logger = logger or setup_default_logger(log_name="ConfigManager", log_directory="logs/GuiFramework")
         self._check_default_config()
         self.load_config()
 
@@ -95,10 +97,10 @@ class ConfigManager():
             self.save_setting(section, name, value)
         self.dynamic_store[name] = {"value": value, "section": section}
 
-    def set_variable(self, name, value):
+    def set_variable(self, name, value, save=True):
         if name in self.dynamic_store:
             section = self.dynamic_store[name].get("section")
-            if section:
+            if section and save:
                 self.save_setting(section, name, value)
             self.dynamic_store[name]["value"] = value
         else:
@@ -141,7 +143,7 @@ class ConfigManager():
 
     def _write_config_to_file(self, config, file_path):
         try:
-            with open(file_path, 'w', encoding='utf-8') as configfile:
+            with open(file_path, "w", encoding="utf-8") as configfile:
                 config.write(configfile)
         except Exception as e:
             if self.logger:

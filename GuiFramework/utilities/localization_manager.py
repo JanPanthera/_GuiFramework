@@ -1,14 +1,15 @@
-# localization_manager.py
+# GuiFramework/utilities/localization_manager.py
 
-from concurrent.futures import ThreadPoolExecutor
 import json
 import glob
 import threading
+
 from babel import Locale
 from pathlib import Path
 from collections import defaultdict
-from .utils import setup_default_logger
-from .bimap import BiMap
+from concurrent.futures import ThreadPoolExecutor
+
+from GuiFramework.utilities import EventManager, BiMap, setup_default_logger
 
 
 class LocalizationManager:
@@ -17,7 +18,7 @@ class LocalizationManager:
     DEFAULT_LANGUAGE = "en"
 
     def __init__(self, locales_dir=None, active_language=None, fallback_language=None, lazy_load=True, logger=None):
-        self.logger = logger or setup_default_logger("LocalizationManager")
+        self.logger = logger or setup_default_logger(log_name="LocalizationManager", log_directory="logs/GuiFramework")
         self.lock = threading.RLock()
         self.observers = {"before_subs_notify": [], "lang_update": [], "after_subs_notify": []}
         self.locale_dir = Path(locales_dir) or Path(self.DEFAULT_LOCALES_DIR)
@@ -101,7 +102,6 @@ class LocalizationManager:
                 return key
             self.logger.warning("Localization key is empty")
             return "key_error"
-        
 
         def translate(lookup_key, languages):
             """Attempts to translate the key using the provided list of languages."""
