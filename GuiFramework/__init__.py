@@ -1,5 +1,6 @@
 # GuiFramework/__init__.py
 
-from .gui import *
-from .widgets import *
-from .utilities import *
+
+from GuiFramework.gui import *
+from GuiFramework.widgets import *
+from GuiFramework.utilities import *
