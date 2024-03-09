@@ -1,4 +1,4 @@
-# custom_context_menu.py
+# GuiFramework/widgets/custom_context_menu.py
 
 import customtkinter as ctk
 from functools import partial
@@ -17,7 +17,7 @@ class CustomContextMenu(ctk.CTkToplevel):
         for item in menu_items:
             text, command = item.get("text"), item.get("command")
             button = ctk.CTkButton(self.menu_frame, text=text, command=partial(self.on_menu_select, command), corner_radius=0)
-            button.pack(fill='x')
+            button.pack(fill="x")
 
         self.bind("<FocusOut>", self.on_focus_out)
 

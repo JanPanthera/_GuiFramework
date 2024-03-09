@@ -1,4 +1,5 @@
-import os
+# GuiFramework/widgets/tree_view/file_tree_view.py
+
 import customtkinter as ctk
 
 from GuiFramework.widgets.tree_view.file_tree_view import FileTreeView

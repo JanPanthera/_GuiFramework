@@ -1,4 +1,4 @@
-# custom_textbox.py
+# GuiFramework/widgets/custom_textbox.py
 
 import customtkinter as ctk
 

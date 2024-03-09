@@ -1,8 +1,10 @@
+# GuiFramework/widgets/scrollable_selection_frame.py
+
 import customtkinter as ctk
 
 
 class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master, variable=None, values=None, widget_type='checkbox', single_select=False, command=None, font=None, logger=None, **kwargs):
+    def __init__(self, master, variable=None, values=None, widget_type="checkbox", single_select=False, command=None, font=None, logger=None, **kwargs):
         super().__init__(master, **kwargs)
         self.command = command
         self.custom_font = font
@@ -14,18 +16,18 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
 
         if variable:
             if isinstance(variable, str):
-                variable = variable.split(',')
+                variable = variable.split(",")
             self.add_entries(variable)
 
         if values:
             if isinstance(values, str):
-                values = values.split(',')
+                values = values.split(",")
             self.set_entries_state(values, True)
 
     # Public Methods
     def add_entry(self, entry):
         if entry in self.states:
-            self._log_warning(f"Attempted to add a duplicate entry: '{entry}'")
+            self._log_warning(f"Attempted to add a duplicate entry: "{entry}"")
             return
         self.states[entry] = False
         self._create_and_place_widget(entry)
@@ -54,7 +56,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
 
     def set_entry_state(self, entry, state):
         if entry not in self.states:
-            self._log_warning(f"Attempted to set state for non-existent entry: '{entry}'")
+            self._log_warning(f"Attempted to set state for non-existent entry: "{entry}"")
             return
         self.states[entry] = state
         self._update_widget_for_entry(entry)
@@ -105,7 +107,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
     def _create_and_place_widget(self, entry):
         def widget_command(entry=entry): return self.toggle_entry(entry)
         widget = self._create_widget(entry, widget_command)
-        widget.grid(row=len(self.widgets), column=0, pady=(0, 5), sticky='nw')
+        widget.grid(row=len(self.widgets), column=0, pady=(0, 5), sticky="nw")
         self.widgets[entry] = widget
         self._update_widget_state(widget)
 
@@ -114,9 +116,9 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
 
     def _create_widget(self, entry, command):
         widget_factory = {
-            'checkbox': lambda: ctk.CTkCheckBox(self, text=entry, command=command, font=self.custom_font),
-            'radio': lambda: self._create_radio_button(entry, command),
-            'label': lambda: self._create_label(entry, command)
+            "checkbox": lambda: ctk.CTkCheckBox(self, text=entry, command=command, font=self.custom_font),
+            "radio": lambda: self._create_radio_button(entry, command),
+            "label": lambda: self._create_label(entry, command)
         }
         return widget_factory.get(self.widget_type, lambda: None)()
 
@@ -135,7 +137,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
             if self.command:
                 self.command(entry)
         except Exception as e:
-            self._log_error(f"Error executing command for entry '{entry}': {e}")
+            self._log_error(f"Error executing command for entry "{entry}": {e}")
 
     def _log_warning(self, message):
         if self.logger:
@@ -148,9 +150,9 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
     def _update_widget_state(self, widget):
         entry = widget.cget("text")
         is_selected = self.states[entry]
-        if self.widget_type in ['checkbox', 'radio']:
+        if self.widget_type in ["checkbox", "radio"]:
             widget.select() if is_selected else widget.deselect()
-        elif self.widget_type == 'label':
+        elif self.widget_type == "label":
             self._update_label_widget_state(widget, is_selected)
 
     def _update_label_widget_state(self, widget, is_selected):
@@ -161,13 +163,13 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
             self._update_widget_state(widget)
 
     def _place_widget_in_grid(self, widget, position):
-        widget.grid(row=position, column=0, pady=(0, 5), sticky='nw')
+        widget.grid(row=position, column=0, pady=(0, 5), sticky="nw")
 
     def _rearrange_widgets(self, sorted_entries):
         for index, entry in enumerate(sorted_entries):
             widget = self.widgets.get(entry)
             if widget:
-                widget.grid(row=index, column=0, pady=(0, 5), sticky='nw')
+                widget.grid(row=index, column=0, pady=(0, 5), sticky="nw")
         self.widgets = {entry: self.widgets[entry] for entry in sorted_entries}
 
     def _update_widget_for_entry(self, entry):

@@ -2,9 +2,8 @@
 
 import customtkinter as ctk
 
-from GuiFramework.utilities.utils import setup_default_logger
-from GuiFramework.utilities.event_manager import EventManager
 from abc import abstractmethod
+from GuiFramework.utilities import EventManager, setup_default_logger
 
 
 class BaseNode:
@@ -19,22 +18,22 @@ class BaseNode:
         self.node_container = ctk.CTkFrame(parent, fg_color="transparent")
 
         if icon_text:
-            self.icon_label = ctk.CTkLabel(self.node_container, text=icon_text, fg_color="transparent", anchor='nw')
-            self.icon_label.pack(side='left', padx=(0, 5), pady=0, ipadx=0, ipady=0)
+            self.icon_label = ctk.CTkLabel(self.node_container, text=icon_text, fg_color="transparent", anchor="nw")
+            self.icon_label.pack(side="left", padx=(0, 5), pady=0, ipadx=0, ipady=0)
         else:
             self.icon_label = None
 
-        self.controller = ctk.CTkButton(self.node_container, text=name, fg_color="transparent", anchor='nw', hover=False, corner_radius=0)
-        self.controller.pack(side='left', padx=0, pady=0, ipadx=0, ipady=0)
+        self.controller = ctk.CTkButton(self.node_container, text=name, fg_color="transparent", anchor="nw", hover=False, corner_radius=0)
+        self.controller.pack(side="left", padx=0, pady=0, ipadx=0, ipady=0)
 
     def show(self):
-        """Makes the node's container visible."""
+        """Makes the node"s container visible."""
         if not self.visible:
-            self.node_container.pack(padx=(20, 0), pady=(5, 0), anchor='nw')
+            self.node_container.pack(padx=(20, 0), pady=(5, 0), anchor="nw")
             self.visible = True
 
     def hide(self):
-        """Hides the node's container."""
+        """Hides the node"s container."""
         if self.visible:
             self.node_container.pack_forget()
             self.visible = False
@@ -48,6 +47,10 @@ class BaseNode:
         """Renames the node."""
         self.controller.configure(text=new_name)
         self.name = new_name
+
+    def cleanup(self):
+        """Cleans up the node."""
+        self.data = None
 
 
 class BaseFileNode(BaseNode):
@@ -80,6 +83,10 @@ class BaseFileNode(BaseNode):
             self.controller.configure(fg_color="transparent")
             EventManager.notify("file_deselected", self)
 
+    def cleanup(self):
+        """Cleans up the file node."""
+        super().cleanup()
+
 
 class BaseFolderNode(BaseNode):
     """Base class for folder nodes."""
@@ -88,12 +95,12 @@ class BaseFolderNode(BaseNode):
         self.expanded_icon = expanded_icon or "▼"
         self.collapsed_icon = collapsed_icon or "▶"
 
-        self.base_folder_node_container = ctk.CTkFrame(parent, fg_color="transparent")
-        self.base_folder_node_container.pack(padx=0, pady=0, ipadx=0, ipady=0, anchor='nw')
+        self.folder_node_container = ctk.CTkFrame(parent, fg_color="transparent")
+        self.folder_node_container.pack(padx=0, pady=0, ipadx=0, ipady=0, anchor="nw")
 
-        self.child_nodes_container = ctk.CTkFrame(self.base_folder_node_container, fg_color="transparent")
+        self.child_nodes_container = ctk.CTkFrame(self.folder_node_container, fg_color="transparent")
 
-        super().__init__(self.base_folder_node_container, name, data, self.collapsed_icon)
+        super().__init__(self.folder_node_container, name, data, self.collapsed_icon)
         self.controller.configure(command=self.toggle_child_nodes)
 
         self.child_nodes = []
@@ -117,22 +124,22 @@ class BaseFolderNode(BaseNode):
     def toggle_child_nodes(self):
         """Toggles the visibility of the child nodes."""
         if self.expanded:
-            self.hide_child_nodes()
+            self.collapse()
             EventManager.notify("folder_collapsed", self)
         else:
-            self.show_child_nodes()
+            self.expand()
             EventManager.notify("folder_expanded", self)
 
-    def show_child_nodes(self):
+    def expand(self):
         """Shows the child nodes."""
         if not self.expanded:
             for child_node in self.child_nodes:
                 child_node.show()
-            self.child_nodes_container.pack(padx=(15, 0), pady=0, anchor='nw')
+            self.child_nodes_container.pack(padx=(15, 0), pady=0, anchor="nw")
             self.update_icon(self.expanded_icon)
             self.expanded = True
 
-    def hide_child_nodes(self):
+    def collapse(self):
         """Hides the child nodes."""
         if self.expanded:
             for child_node in self.child_nodes:
@@ -140,21 +147,44 @@ class BaseFolderNode(BaseNode):
                     child_node.deselect()
                 child_node.hide()
                 if isinstance(child_node, BaseFolderNode):
-                    child_node.hide_child_nodes()
+                    child_node.collapse()
             self.child_nodes_container.pack_forget()
             self.update_icon(self.collapsed_icon)
             self.expanded = False
 
+    def cleanup(self):
+        """Cleans up the file node."""
+        for child_node in self.child_nodes:
+            child_node.cleanup()
+        self.child_nodes = []
+        super().cleanup()
+
 
 class BaseTreeView(ctk.CTkScrollableFrame):
     def __init__(self, parent, multi_select=False, logger=None, *args, **kwargs):
-        self.logger = logger or setup_default_logger(log_name="GuiFramework")
+        self.logger = logger or setup_default_logger(log_name="BaseTreeView", log_directory="logs/GuiFramework")
         super().__init__(parent, *args, **kwargs)
         EventManager.subscribe("deselect_all_files", self.deselect_all)
         self.multi_select = multi_select
         self.root_node = None
 
     # Public methods
+    @abstractmethod
+    def create_tree(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def recreate_tree(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def destroy_tree(self):
+        if self.root_node:
+            self.root_node.cleanup()
+            self.root_node.folder_node_container.destroy()
+            self.root_node = None
+        else:
+            self.logger.warning("Root Node must be set before destroying the tree.")
+
     def expand_all(self):
         if self.root_node:
             self._expand_all(self.root_node)
@@ -193,13 +223,13 @@ class BaseTreeView(ctk.CTkScrollableFrame):
     # Private methods
     def _expand_all(self, node):
         if isinstance(node, BaseFolderNode):
-            node.show_child_nodes()
+            node.expand()
             for child_node in node.child_nodes:
                 self._expand_all(child_node)
 
     def _collapse_all(self, node):
         if isinstance(node, BaseFolderNode):
-            node.hide_child_nodes()
+            node.collapse()
             for child_node in node.child_nodes:
                 self._collapse_all(child_node)
 

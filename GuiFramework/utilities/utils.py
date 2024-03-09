@@ -10,11 +10,11 @@ from GuiFramework.utilities.logger import CustomLogger, LOG_LEVEL
 DEBOUNCE_DELAY = 100
 
 
-def setup_default_logger(log_name='default_logger'):
+def setup_default_logger(log_name="default_logger", log_directory="logs"):
     """Setup the default logger."""
     return CustomLogger(
-        log_name=log_name if log_name.endswith('.log') else f"{log_name}.log",
-        log_path="logs",
+        log_name=log_name if log_name.endswith(".log") else f"{log_name}.log",
+        log_path=log_directory,
         textbox=None,
         log_level=LOG_LEVEL.DEBUG,
         max_log_size=10 << 20,
@@ -29,7 +29,7 @@ def get_dpi_scaling_factor(logger=None):
     logger = logger or setup_default_logger()
     scaling_factor = 1.0
 
-    if not hasattr(ctypes, 'windll'):
+    if not hasattr(ctypes, "windll"):
         logger.warning("get_dpi_scaling_factor is designed to run on Windows.")
         return scaling_factor
 

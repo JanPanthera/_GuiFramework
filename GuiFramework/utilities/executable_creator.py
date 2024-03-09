@@ -14,7 +14,7 @@ class ExecutableCreator:
 
     def __init__(self, main_script_path, exe_name, dist_path, work_path, no_console=False, additional_flags=None, logger=None):
         """Initialize ExecutableCreator with script, paths, and flags."""
-        self.logger = logger or setup_default_logger()
+        self.logger = logger or setup_default_logger(log_name="ExecutableCreator", log_directory="logs/GuiFramework")
         self.main_script_path = Path(main_script_path)
         self.exe_name = exe_name
         self.dist_path = Path(dist_path)
@@ -26,7 +26,7 @@ class ExecutableCreator:
 
     def add_hidden_import(self, import_name):
         """Add a hidden import."""
-        self.additional_flags.append(f'--hidden-import={import_name}')
+        self.additional_flags.append(f"--hidden-import={import_name}")
 
     def add_additional_flag(self, flag):
         """Add an additional flag."""
@@ -34,31 +34,31 @@ class ExecutableCreator:
 
     def set_icon(self, icon_path):
         """Set the icon for the executable."""
-        self.additional_flags.append(f'--icon={icon_path}')
+        self.additional_flags.append(f"--icon={icon_path}")
 
     def add_data_file(self, source, destination):
         """Add a data file to the executable."""
-        self.additional_flags.append(f'--add-data={source}{os.pathsep}{destination}')
+        self.additional_flags.append(f"--add-data={source}{os.pathsep}{destination}")
 
     def create_executable(self):
         """Create the executable file."""
         try:
             pyinstaller_command = [
-                'pyinstaller',
-                '--onefile',
-                f'--distpath={self.dist_path}',
-                f'--workpath={self.work_path}',
-                f'--name={self.exe_name}',
-                '--debug=all',
+                "pyinstaller",
+                "--onefile",
+                f"--distpath={self.dist_path}",
+                f"--workpath={self.work_path}",
+                f"--name={self.exe_name}",
+                "--debug=all",
                 *self.additional_flags,
                 str(self.main_script_path)
             ]
 
             if self.no_console:
-                pyinstaller_command.append('--noconsole')
+                pyinstaller_command.append("--noconsole")
 
             def handle_stream(stream):
-                for line in iter(stream.readline, ''):
+                for line in iter(stream.readline, ""):
                     print(line.strip())
                 stream.close()
 
@@ -95,8 +95,8 @@ class ExecutableCreator:
         if not self.main_script_path.exists():
             raise FileNotFoundError(f"Main script not found: {self.main_script_path}")
 
-        if not shutil.which('pyinstaller'):
-            raise EnvironmentError("PyInstaller is not installed or not in the system's PATH.")
+        if not shutil.which("pyinstaller"):
+            raise EnvironmentError("PyInstaller is not installed or not in the system"s PATH.")
 
     def _validate_output_executable(self):
         """Validate the output executable file."""

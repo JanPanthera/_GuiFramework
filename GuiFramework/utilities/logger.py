@@ -1,8 +1,9 @@
-# logger.py
+# GuiFramework/utilities/logger.py
 
 import logging
 import os
 import traceback
+
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
@@ -25,10 +26,10 @@ class TextboxHandler(logging.Handler):
 
     def emit(self, record):
         msg = self.format(record)
-        self.textbox.configure(state='normal')
-        self.textbox.insert('end', msg + '\n')
-        self.textbox.configure(state='disabled')
-        self.textbox.yview('end')
+        self.textbox.configure(state="normal")
+        self.textbox.insert("end", msg + "\n")
+        self.textbox.configure(state="disabled")
+        self.textbox.yview("end")
 
 
 class CustomRotatingFileHandler(RotatingFileHandler):
@@ -89,7 +90,7 @@ class CustomRotatingFileHandler(RotatingFileHandler):
 
         if not self.append_datetime_to_rolled_files:
             for i, backup in enumerate(backups, start=1):
-                new_name_parts = backup.rsplit('_', 1)[0] + f'_{i:02d}'
+                new_name_parts = backup.rsplit("_", 1)[0] + f"_{i:02d}"
 
                 old_path = os.path.join(os.path.dirname(self.base_filename), backup)
                 new_path = os.path.join(os.path.dirname(self.base_filename), new_name_parts)
@@ -106,9 +107,9 @@ class CustomRotatingFileHandler(RotatingFileHandler):
 
 
 class CustomLogger:
-    def __init__(self, log_name='application.log', log_path="logs", textbox=None, log_level=logging.DEBUG,
+    def __init__(self, log_name="application.log", log_path="logs", textbox=None, log_level=logging.DEBUG,
                  max_log_size=10*1024*1024, backup_count=5, rotate_on_start=False, append_datetime_to_rolled_files=False,
-                 rotation_datetime_format="%Y-%m-%d_%H-%M-%S", datetime_format='%H:%M:%S'):
+                 rotation_datetime_format="%Y-%m-%d_%H-%M-%S", datetime_format="%H:%M:%S"):
 
         self.logger = logging.getLogger(log_name)
         self.logger.setLevel(log_level)
@@ -117,7 +118,7 @@ class CustomLogger:
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
         log_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             datefmt=datetime_format
         )
 
@@ -137,7 +138,7 @@ class CustomLogger:
             textbox_handler = TextboxHandler(textbox)
             textbox_handler.setLevel(log_level)
             textbox_formatter = logging.Formatter(
-                '%(asctime)s - %(levelname)s - %(message)s',
+                "%(asctime)s - %(levelname)s - %(message)s",
                 datefmt=datetime_format
             )
             textbox_handler.setFormatter(textbox_formatter)

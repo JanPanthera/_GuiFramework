@@ -1,4 +1,4 @@
-# custom_console_textbox.py
+# GuiFramework/widgets/custom_console_textbox.py
 
 import customtkinter as ctk
 
@@ -7,31 +7,31 @@ from GuiFramework.widgets.custom_context_menu import CustomContextMenu
 
 class CustomConsoleTextbox(ctk.CTkTextbox):
     def __init__(self, master, autoscroll=True, max_lines=1000, **kwargs):
-        if 'font' in kwargs:
-            font = kwargs['font']
+        if "font" in kwargs:
+            font = kwargs["font"]
             if isinstance(font, list):
-                kwargs['font'] = tuple(font)
+                kwargs["font"] = tuple(font)
         super().__init__(master, **kwargs)
         self.master = master
         self.autoscroll = autoscroll
         self.max_lines = max_lines
-        self.configure(state='disabled')
+        self.configure(state="disabled")
         self.context_menu = None
         self._create_context_menu()
 
     def write_console(self, text):
-        self.configure(state='normal')
-        self.insert('end', text)
+        self.configure(state="normal")
+        self.insert("end", text)
         self._limit_text_length()
         if self.autoscroll:
-            self.see('end')
-        self.configure(state='disabled')
+            self.see("end")
+        self.configure(state="disabled")
         self.update_idletasks()
 
     def clear_console(self):
-        self.configure(state='normal')
-        self.delete("1.0", 'end')
-        self.configure(state='disabled')
+        self.configure(state="normal")
+        self.delete("1.0", "end")
+        self.configure(state="disabled")
 
     def _create_context_menu(self):
         menu_items = [
@@ -58,6 +58,6 @@ class CustomConsoleTextbox(ctk.CTkTextbox):
         self.tag_add("sel", "1.0", "end")
 
     def _limit_text_length(self):
-        lines = int(self.index('end-1c').split('.')[0])
+        lines = int(self.index("end-1c").split(".")[0])
         if lines > self.max_lines:
-            self.delete('1.0', f'{lines - self.max_lines + 1}.0')
+            self.delete("1.0", f"{lines - self.max_lines + 1}.0")

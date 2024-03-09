@@ -9,7 +9,7 @@ from GuiFramework.utilities.utils import setup_default_logger
 
 
 class FileOps:
-    logger = setup_default_logger(log_name="FileOps", log_directory="GuiFramework")
+    logger = setup_default_logger(log_name="FileOps", log_directory="logs/GuiFramework")
     lock = threading.RLock()
 
     # File Operations
@@ -68,10 +68,22 @@ class FileOps:
         """Copy a file to a destination."""
         with FileOps.lock:
             try:
+                os.makedirs(os.path.dirname(destination), exist_ok=True)
                 if preserve_metadata:
                     shutil.copy2(source_file, destination)
                 else:
+                    # Check if source file exists
+                    if not os.path.exists(source_file):
+                        FileOps.logger.error(f"Source file does not exist: {source_file}")
+                        return
+                    # Check if source file is readable
+                    if not os.access(source_file, os.R_OK):
+                        FileOps.logger.error(f"Source file is not readable: {source_file}")
+                        return
                     shutil.copy(source_file, destination)
+                    # Check if destination file exists after copy
+                    if not os.path.exists(destination):
+                        FileOps.logger.error(f"Destination file does not exist after copy: {destination}")
             except FileNotFoundError as e:
                 FileOps.logger.error(f"File not found: {source_file}")
             except Exception as e:
@@ -290,10 +302,13 @@ class FileOps:
 
     # Utility Operations
     @staticmethod
-    def is_file_name_valid(file_name, invalid_chars=""):
-        """Check if a file name is valid."""
+    def get_invalid_file_name_chars(file_name, valid_chars=""):
+        """Get invalid characters in a file name."""
         with FileOps.lock:
-            return not any(char in invalid_chars for char in file_name)
+            invalid_chars = set(file_name) - set(valid_chars)
+            if invalid_chars:
+                return ", ".join(invalid_chars)
+            return ""
 
     @staticmethod
     def get_all_file_names_in_directory(directory, include_nested=False):

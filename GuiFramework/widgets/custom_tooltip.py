@@ -1,4 +1,7 @@
+# GuiFramework/widgets/custom_tooltip.py
+
 import customtkinter as ctk
+
 
 class CustomTooltip:
     def __init__(self, widget, text, delay=200):
@@ -28,7 +31,7 @@ class CustomTooltip:
 
         self.tooltip_window = ctk.CTkToplevel(self.widget)
         self.tooltip_window.wm_overrideredirect(True)
-        
+
         label = ctk.CTkLabel(self.tooltip_window, text=self.text, corner_radius=10)
         label.pack(fill="none", expand=False)
 
@@ -37,7 +40,7 @@ class CustomTooltip:
         height = label.winfo_reqheight()
 
         self.tooltip_window.wm_geometry(f"{width}x{height}+{x}+{y}")
-        
+
         self.tooltip_window.bind("<Enter>", self.enter_tooltip)
         self.tooltip_window.bind("<Leave>", self.schedule_hide_tooltip)
 
