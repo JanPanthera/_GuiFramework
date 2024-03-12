@@ -11,6 +11,14 @@ class ConfigHandler:
         _ConfigHandlerCore._add_config(config_name, handler_config, custom_type_handlers)
 
     @staticmethod
+    def sync_default_config(config_name: str):
+        _ConfigHandlerCore._sync_default_config(config_name)
+
+    @staticmethod
+    def sync_custom_config(config_name: str):
+        _ConfigHandlerCore._sync_custom_config(config_name)
+
+    @staticmethod
     def add_custom_type_handler(type_: str, handler):
         _ConfigHandlerCore._add_custom_type_handler(type_, handler)
 

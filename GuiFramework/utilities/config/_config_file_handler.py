@@ -1,10 +1,10 @@
 # GuiFramework/utilities/config/_config_file_handler.py
 
+import threading
 import configparser
 
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional
 from dataclasses import dataclass, field
-from functools import cached_property
 
 from GuiFramework.core.constants import FRAMEWORK_NAME
 from GuiFramework.utilities.logging import Logger
@@ -13,24 +13,24 @@ from GuiFramework.utilities.file_ops import FileOps
 
 @dataclass
 class ConfigFileHandlerConfig:
-    """Configuration for a configuration file handler."""
+    """Configuration for the ConfigFileHandler."""
     config_path: str = "config"
     default_config_name: str = "default-config.ini"
     custom_config_name: str = "custom-config.ini"
-    default_config_creator_func: Any = lambda: {}
+    default_config_creator_func: Optional[Callable[[], Dict]] = None
 
-    @cached_property
+    @property
     def default_config_path(self):
-        """Path to the default configuration file."""
+        """The full path to the default configuration file."""
         return FileOps.join_paths(self.config_path, self.default_config_name)
 
-    @cached_property
+    @property
     def custom_config_path(self):
-        """Path to the custom configuration file."""
+        """The full path to the custom configuration file."""
         return FileOps.join_paths(self.config_path, self.custom_config_name)
 
     def __post_init__(self):
-        """Post-initialization validation of ConfigFileHandlerConfig."""
+        """Post-initialization validation."""
         if not FileOps.directory_exists(self.config_path):
             FileOps.create_directory(self.config_path)
         if not self.default_config_name.endswith(".ini"):
@@ -39,174 +39,177 @@ class ConfigFileHandlerConfig:
             raise ValueError(f"Invalid custom_config_name: {self.custom_config_name}")
         if self.default_config_name == self.custom_config_name:
             raise ValueError(f"default_config_name and custom_config_name cannot be the same")
-        if not callable(self.default_config_creator_func):
+        if self.default_config_creator_func is not None and not callable(self.default_config_creator_func):
             raise ValueError(f"default_config_creator_func must be callable")
-        config_data_test = self.default_config_creator_func()
-        if not isinstance(config_data_test, dict):
+        if self.default_config_creator_func is not None and not isinstance(self.default_config_creator_func(), dict):
             raise ValueError(f"default_config_creator_func must return a dictionary")
 
 
 @dataclass
 class ConfigData:
-    """Dataclass for storing configuration data."""
+    """Data class for configuration data."""
     default_config: configparser.ConfigParser = field(default_factory=configparser.ConfigParser, init=False)
     custom_config: configparser.ConfigParser = field(default_factory=configparser.ConfigParser, init=False)
-    default_config_data: Dict[str, Dict[str, str]] = field(default_factory=dict)
-
-
-@dataclass
-class ConfigContainer:
-    """Dataclass for storing configuration data."""
-    handler_config: ConfigFileHandlerConfig
-    config_data: ConfigData
+    file_handler_config: ConfigFileHandlerConfig = field(default_factory=ConfigFileHandlerConfig)
 
 
 class _ConfigFileHandler:
-    """Class for handling configuration files."""
-    config_containers: Dict[str, ConfigContainer] = {}
+    """Private class for handling configuration files."""
+    configs: Dict[str, ConfigData] = {}
+    lock = threading.RLock()
 
     @classmethod
     def _add_config(cls, config_name: str, handler_config: ConfigFileHandlerConfig):
-        """Add a new configuration to the _ConfigFileHandler."""
-        if config_name in cls.config_containers:
-            cls._warning(f"Config \"{config_name}\" already exists.")
-            return
-        config_data = cls._initialize_config_data(handler_config)
-        cls.config_containers[config_name] = ConfigContainer(handler_config, config_data)
+        """Add a new configuration to the handler."""
+        with cls.lock:
+            if config_name in cls.configs:
+                cls._log_warning("_add_config", f"Config \"{config_name}\" already exists.")
+                return
+            cls.configs[config_name] = ConfigData(
+                file_handler_config=handler_config
+            )
+            cls._sync_default_config(config_name)
+            cls._sync_custom_config(config_name)
 
     @classmethod
-    def _initialize_config_data(cls, handler_config: ConfigFileHandlerConfig):
-        """Initialize the configuration data."""
-        config_data = ConfigData()
-        config_data.default_config_data = handler_config.default_config_creator_func()
-        try:
-            if not FileOps.file_exists(handler_config.default_config_path):
-                cls._generate_default_config(config_data.default_config_data, handler_config.default_config_path)
-            config_data.default_config.read(handler_config.default_config_path, encoding="utf-8")
-            if not FileOps.file_exists(handler_config.custom_config_path):
-                FileOps.copy_file(handler_config.default_config_path, handler_config.custom_config_path)
-            config_data.custom_config.read(handler_config.custom_config_path, encoding="utf-8")
-        except (FileNotFoundError, configparser.Error) as e:
-            cls._error(f"Failed to load configuration from path \"{handler_config.custom_config_path}\": {e}")
-            raise RuntimeError(f"Failed to load configuration from path \"{handler_config.custom_config_path}\": {e}")
-        return config_data
+    def _sync_default_config(cls, config_name: str):
+        """Sync the default_config with the default_config_path file."""
+        cls._sync_config(config_name, 'default')
 
     @classmethod
-    def _generate_default_config(cls, default_config_data: Dict[str, Dict[str, str]], default_config_path: str):
-        """Generate a default configuration file."""
-        config = configparser.ConfigParser()
-        for section, settings in default_config_data.items():
-            config[section] = settings
-        try:
-            FileOps.write_file(default_config_path, config)
-        except IOError as e:
-            cls._error(f"Failed to write default configuration to path \"{default_config_path}\": {e}")
-            raise IOError(f"Failed to write default configuration to path \"{default_config_path}\": {e}")
+    def _sync_custom_config(cls, config_name: str):
+        """Sync the custom_config with the custom_config_path file."""
+        cls._sync_config(config_name, 'custom')
 
-    # setting handling methods
     @classmethod
-    def _save_setting(cls, config_name, section, option, value):
-        """Save a setting to the configuration file."""
+    def _sync_config(cls, config_name: str, config_type: str):
+        """Sync the config with the config_path file."""
         try:
-            config_container = cls.config_containers.get(config_name)
-            if config_container is None:
-                raise configparser.Error(f"Config \"{config_name}\" not found.")
-            config_data = config_container.config_data
-            handler_config = config_container.handler_config
-            saver = handler_config.custom_type_handlers.get(type(value)).save
-            if saver:
-                value = saver(value)
+            config_data = cls.configs[config_name]
+            config = getattr(config_data, f'{config_type}_config')
+            config_path = getattr(config_data.file_handler_config, f'{config_type}_config_path')
+            config.read(config_path)
+            if not config.sections() and config_data.file_handler_config.default_config_creator_func:
+                default_values = config_data.file_handler_config.default_config_creator_func()
+                cls._dic_to_config(config, default_values)
+                cls._write_config_to_file(config, config_path)
+        except Exception as e:
+            cls._log_error("_sync_config", f"Failed to sync {config_type} config for \"{config_name}\": {e}")
+
+    @classmethod
+    def _dic_to_config(cls, config: configparser.ConfigParser, dic: Dict) -> None:
+        """Convert a dictionary to a ConfigParser object."""
+        config.clear()
+        for section, options in dic.items():
+            config[section] = options
+
+    @classmethod
+    def _write_config_to_file(cls, config_data, path):
+        """Write a configuration to a file."""
+        try:
+            with open(path, 'w', encoding='utf-8') as config_file:
+                config_data.write(config_file)
+        except Exception as e:
+            cls._log_error("_write_config_to_file", f"Failed to write config to {path}: {e}")
+            # Critical error, so raise the exception
+            raise e
+
+    @classmethod
+    def _save_setting(cls, config_name: str, section: str, option: str, value: Any) -> None:
+        """Save a setting to the custom configuration file."""
+        try:
+            config_data = cls.configs.get(config_name)
+            if config_data is None:
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
+            if not config_data.custom_config.has_section(section):
+                config_data.custom_config.add_section(section)
             config_data.custom_config.set(section, option, value)
-            cls._write_config_to_file(config_data.custom_config, handler_config.custom_config_path)
-            dynamic_store_value = config_data.dynamic_store.get(option)
-            if dynamic_store_value is not None:
-                dynamic_store_value["value"] = value
+            cls._write_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
         except configparser.Error as e:
-            cls._error(f"Failed to save setting \"{option}\" in section \"{section}\": {e}")
-            raise configparser.Error(f"Failed to save setting \"{option}\" in section \"{section}\": {e}")
+            cls._log_error("_save_setting", str(e))
+            raise
 
-    @classmethod
-    def _get_setting(cls, config_name, section, option, fallback_value=None, force_default=False):
-        """Get a setting from the configuration file."""
+    @ classmethod
+    def _get_setting(cls, config_name: str, section: str, option: str, fallback_value: Optional[Any] = None, force_default: bool = False) -> Any:
+        """Get a setting from the custom configuration file."""
         try:
-            config_container = cls.config_containers.get(config_name)
-            if config_container is None:
-                raise configparser.Error(f"Config \"{config_name}\" not found.")
-            config_data = config_container.config_data
-            return config_data.default_config.get(section, option) if force_default else config_data.custom_config.get(section, option, fallback=default_value)
-        except configparser.NoSectionError:
-            cls._error(f"Section \"{section}\" not found in configuration. Using default value.")
-            raise configparser.NoSectionError(f"Section \"{section}\" not found in configuration.")
+            config_data = cls.configs.get(config_name)
+            if config_data is None:
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
+            if force_default:
+                return config_data.default_config.get(section, option)
+            else:
+                return config_data.custom_config.get(section, option, fallback=fallback_value)
         except configparser.Error as e:
-            cls._error(f"Failed to load setting \"{option}\" in section \"{section}\": {e}")
-            if fallback_value is None:
-                raise configparser.Error(f"No default value provided for \"{option}\" in section \"{section}\"")
-            return fallback_value
+            cls._log_error("_get_setting", str(e))
+            raise
 
-    @classmethod
-    def _reset_setting(cls, config_name, section, option):
+    @ classmethod
+    def _reset_setting(cls, config_name: str, section: str, option: str) -> None:
         """Reset a setting to the default value."""
         try:
-            config_container = cls.config_containers.get(config_name)
-            config_data = config_container.config_data
-            handler_config = config_container.handler_config
+            config_data = cls.configs.get(config_name)
+            if config_data is None:
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
             default_value = config_data.default_config.get(section, option)
             config_data.custom_config.set(section, option, default_value)
-            cls._write_config_to_file(config_data.custom_config, handler_config.custom_config_path)
-            dynamic_store_value = config_data.dynamic_store.get(option)
-            if dynamic_store_value is not None:
-                creator = handler_config.custom_type_handlers.get(type(dynamic_store_value["value"])).create
-                if creator:
-                    default_value = creator(default_value)
-                dynamic_store_value["value"] = default_value
-        except configparser.NoSectionError:
-            cls._error(f"Section \"{section}\" not found in default configuration.")
-            raise configparser.NoSectionError(f"Section \"{section}\" not found in default configuration.")
-        except configparser.NoOptionError:
-            cls._error(f"Option \"{option}\" not found in section \"{section}\" of default configuration.")
-            raise configparser.NoOptionError(f"Option \"{option}\" not found in section \"{section}\" of default configuration.")
+            cls._write_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
         except configparser.Error as e:
-            cls._error(f"Failed to reset setting \"{option}\" in section \"{section}\": {e}")
-            raise configparser.Error(f"Failed to reset setting \"{option}\" in section \"{section}\": {e}")
+            cls._log_error("_reset_setting", str(e))
+            raise
 
-    @classmethod
-    def _reset_section(cls, config_name, section):
-        """Reset a section to the default values."""
+    @ classmethod
+    def _reset_section(cls, config_name: str, section: str) -> None:
+        """Reset a section to the default settings."""
         try:
-            config_container = cls.config_containers.get(config_name)
-            config_data = config_container.config_data
-            handler_config = config_container.handler_config
+            config_data = cls.configs.get(config_name)
+            if config_data is None:
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
             default_settings = config_data.default_config[section]
             config_data.custom_config[section] = default_settings
-            cls._write_config_to_file(config_data.custom_config, handler_config.custom_config_path)
-            for option, value in default_settings.items():
-                dynamic_store_value = config_data.dynamic_store.get(option)
-                if dynamic_store_value is not None:
-                    creator = handler_config.custom_type_handlers.get(type(dynamic_store_value["value"])).create
-                    if creator:
-                        value = creator(value)
-                    dynamic_store_value["value"] = value
-        except configparser.NoSectionError:
-            cls._error(f"Section \"{section}\" not found in default configuration.")
-            raise configparser.NoSectionError(f"Section \"{section}\" not found in default configuration.")
+            cls._write_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
         except configparser.Error as e:
-            cls._error(f"Failed to reset section \"{section}\": {e}")
-            raise configparser.Error(f"Failed to reset section \"{section}\": {e}")
+            cls._log_error("_reset_section", str(e))
+            raise
 
-    @classmethod
-    def reset_config(cls, config_name):
-        """Reset the entire configuration to the default values."""
-        config_data = cls.config_containers.get(config_name).config_data
-        config_data.custom_config.clear()
-        config_data.custom_config.read(cls.setup.default_config_path, encoding="utf-8")
-        cls._write_config_to_file(config_data.custom_config, cls.setup.custom_config_path)
+    @ classmethod
+    def _reset_config(cls, config_name: str) -> None:
+        """Reset the entire configuration to the default settings."""
+        try:
+            config_data = cls.configs.get(config_name)
+            if config_data is None:
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
+            config_data.custom_config.clear()
+            config_data.custom_config.read(config_data.file_handler_config.default_config_path, encoding="utf-8")
+            cls._write_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
+        except configparser.Error as e:
+            cls._log_error("_reset_config", str(e))
+            raise
 
-    @classmethod
-    def _warning(cls, message):
+    @ classmethod
+    def _write_config_to_file(cls, config: configparser.ConfigParser, path: str) -> None:
+        """Write a configuration to a file."""
+        try:
+            with cls.lock:
+                with open(path, 'w', encoding='utf-8') as config_file:
+                    config.write(config_file)
+        except IOError as e:
+            error_message = f"Failed to write configuration to path \"{path}\" due to IOError: {str(e)}"
+            cls._log_error("_write_config_to_file", error_message)
+            raise IOError(error_message) from e
+        except configparser.Error as e:
+            error_message = f"Failed to write configuration to path \"{path}\" due to configparser.Error: {str(e)}"
+            cls._log_error("_write_config_to_file", error_message)
+            raise configparser.Error(error_message) from e
+
+    @ classmethod
+    def _log_warning(cls, method_name: str, message: str) -> None:
         """Log a warning message."""
-        Logger.warning(message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)
+        full_message = f"Warning in method {method_name}: {message}"
+        Logger.warning(full_message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)
 
-    @classmethod
-    def _error(cls, message):
+    @ classmethod
+    def _log_error(cls, method_name: str, message: str) -> None:
         """Log an error message."""
-        Logger.error(message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)
+        full_message = f"Error in method {method_name}: {message}"
+        Logger.error(full_message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)

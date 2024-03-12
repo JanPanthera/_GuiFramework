@@ -14,7 +14,7 @@ from GuiFramework.utilities.logging import Logger
 
 class _ConfigHandlerCore:
     """Core class for the configuration handler."""
-    custom_type_handlers: Dict[str, CustomTypeHandlerBase] = field(default_factory=dict)
+    custom_type_handlers: Dict[str, CustomTypeHandlerBase] = {}
     lock = RLock()
 
     # configuration setup methods
@@ -28,6 +28,18 @@ class _ConfigHandlerCore:
                 cls._add_custom_type_handlers(custom_type_handlers)
 
     @classmethod
+    def _sync_default_config(cls, config_name: str):
+        """Sync the default config with the default config file."""
+        with cls.lock:
+            _ConfigFileHandler._sync_default_config(config_name)
+
+    @classmethod
+    def _sync_custom_config(cls, config_name: str):
+        """Sync the custom config with the custom config file."""
+        with cls.lock:
+            _ConfigFileHandler._sync_custom_config(config_name)
+
+    @classmethod
     def _add_custom_type_handler(cls, type_, handler):
         """Add a custom type handler."""
         if not issubclass(handler, CustomTypeHandlerBase):
@@ -37,11 +49,13 @@ class _ConfigHandlerCore:
             cls.custom_type_handlers[type_] = handler
 
     @classmethod
-    def _add_custom_type_handlers(cls, handlers):
-        """Add multiple custom type handlers."""
+    def _add_custom_type_handlers(cls, handlers: Dict[str, CustomTypeHandlerBase]):
         with cls.lock:
             for type_, handler in handlers.items():
-                cls._add_custom_type_handler(type_, handler)
+                if issubclass(handler, CustomTypeHandlerBase):
+                    cls.custom_type_handlers[type_] = handler
+                else:
+                    cls._warning(f"Handler for type {type_} is not a subclass of CustomTypeHandlerBase.")
 
     # file configuration methods
     @classmethod
