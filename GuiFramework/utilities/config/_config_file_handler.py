@@ -127,6 +127,16 @@ class _ConfigFileHandler:
                     config.set(section, option, value)
 
     @classmethod
+    def _save_config_to_file(cls, config: ConfigParser, config_path: str) -> None:
+        """Save a configuration to a file."""
+        try:
+            FileOps.ensure_directory_exists(config_path)
+            with open(config_path, 'w', encoding='utf-8') as config_file:
+                config.write(config_file)
+        except Exception as e:
+            cls._log_error("_save_config_to_file", f"Failed to write config to {config_path}: {e}")
+
+    @classmethod
     def _save_setting(cls, config_name: str, section: str, option: str, value: Any, auto_save: bool = True) -> None:
         """Save a specific setting to the configuration."""
         config_data = cls.configs.get(config_name)
@@ -150,9 +160,10 @@ class _ConfigFileHandler:
             raise configparser.NoSectionError(f"Config \"{config_name}\" is missing.")
         try:
             for section, options in settings.items():
-                config_section = config_data.custom_config.setdefault(section, {})
+                if not config_data.custom_config.has_section(section):
+                    config_data.custom_config.add_section(section)
                 for option, value in options.items():
-                    config_section[option] = str(value)
+                    config_data.custom_config.set(section, option, str(value))
             if auto_save:
                 cls._save_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
         except configparser.Error as e:
@@ -172,10 +183,10 @@ class _ConfigFileHandler:
             elif section in config_data.default_config and option in config_data.default_config[section]:
                 return config_data.default_config[section][option]
             else:
-                return fallback_value
+                return fallback_value or "NoDefaultValue"
         except configparser.Error as e:
             cls._log_error("_get_setting", f"Failed to get setting {option} in section {section} for config {config_name}: {str(e)}")
-            return fallback_value
+            return fallback_value or "NoDefaultValue"
 
     @classmethod
     def _get_settings(cls, config_name: str, settings: Dict[str, Dict[str, Any]], force_default: bool = False) -> Dict[str, Dict[str, Any]]:
@@ -250,13 +261,7 @@ class _ConfigFileHandler:
         if not config_data:
             cls._log_error("_save_custom_config_to_file", f"Config \"{config_name}\" not found.")
             raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
-        try:
-            FileOps.ensure_directory_exists(config_data.file_handler_config.custom_config_path)
-            with open(config_data.file_handler_config.custom_config_path, 'w', encoding='utf-8') as config_file:
-                config_data.custom_config.write(config_file)
-        except Exception as e:
-            cls._log_error("_save_custom_config_to_file", f"Failed to write config to {config_data.file_handler_config.custom_config_path}: {e}")
-            raise
+        cls._save_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
 
     @classmethod
     def _load_custom_config_from_file(cls, config_name: str) -> None:
