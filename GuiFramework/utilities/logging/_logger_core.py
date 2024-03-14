@@ -33,6 +33,9 @@ class LoggerConfig:
     @property
     def log_path(self) -> str:
         return FileOps.join_paths(self.log_directory, f"{self.log_name}.{self.log_extension}")
+    
+    def __post_init__(self):
+        FileOps.create_file(self.log_path)
 
 
 class _LoggerCore:
