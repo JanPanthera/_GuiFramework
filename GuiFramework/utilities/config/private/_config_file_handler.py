@@ -1,4 +1,5 @@
-# GuiFramework/utilities/config/_config_file_handler.py
+# GuiFramework/utilities/config/private/_config_file_handler.py
+# ATTENTION: This module is for internal use only
 
 import threading
 import configparser
@@ -8,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional, Union
 
 from GuiFramework.core.constants import FRAMEWORK_NAME
-from GuiFramework.utilities.logging import Logger
+from GuiFramework.utilities.logging import StaticLoggerMixin
 from GuiFramework.utilities.file_ops import FileOps
 
 
@@ -71,10 +72,12 @@ class ConfigData:
     file_handler_config: ConfigFileHandlerConfig = field(default_factory=ConfigFileHandlerConfig)
 
 
-class _ConfigFileHandler:
+class _ConfigFileHandler(StaticLoggerMixin):
     """Handles configuration files."""
     configs: Dict[str, ConfigData] = {}
     lock = threading.RLock()
+
+    StaticLoggerMixin.set_logger_details(FRAMEWORK_NAME, "_ConfigFileHandler")
 
     @classmethod
     def _add_config(cls, config_name: str, handler_config: ConfigFileHandlerConfig):
@@ -154,7 +157,7 @@ class _ConfigFileHandler:
                     cls._save_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
             except configparser.Error as e:
                 cls._log_error("_save_setting", f"Failed to save setting {option} in section {section} for config {config_name}: {str(e)}")
-                raise
+                raise ValueError(f"Failed to save setting {option} in section {section} for config {config_name}: {str(e)}")
 
     @classmethod
     def _save_settings(cls, config_name: str, settings: Dict[str, Dict[str, Any]], auto_save: bool = True) -> None:
@@ -174,7 +177,7 @@ class _ConfigFileHandler:
                     cls._save_config_to_file(config_data.custom_config, config_data.file_handler_config.custom_config_path)
             except configparser.Error as e:
                 cls._log_error("_save_settings", f"Failed to save settings for config {config_name}: {str(e)}")
-                raise
+                raise ValueError(f"Failed to save settings for config {config_name}: {str(e)}")
 
     @classmethod
     def _get_setting(cls, config_name: str, section: str, option: str, fallback_value: Optional[Any] = None, force_default: bool = False) -> Any:
@@ -214,6 +217,16 @@ class _ConfigFileHandler:
             return result
 
     @classmethod
+    def _get_config(cls, config_name: str) -> Dict[str, Dict[str, str]]:
+        """Get the configuration data."""
+        with cls.lock:
+            config_data = cls.configs.get(config_name)
+            if not config_data:
+                cls._log_error("_get_config", f"Config \"{config_name}\" not found.")
+                raise configparser.NoSectionError(f"Config \"{config_name}\" not found.")
+            return config_data.custom_config._sections
+
+    @classmethod
     def _reset_setting(cls, config_name: str, section: str, option: str, auto_save: bool = True) -> None:
         """Reset a specific setting to its default value."""
         with cls.lock:
@@ -228,7 +241,7 @@ class _ConfigFileHandler:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
                 cls._log_error("_reset_setting", f"Failed to reset setting {option} in section {section} for config {config_name}: {str(e)}")
-                raise
+                raise ValueError(f"Failed to reset setting {option} in section {section} for config {config_name}: {str(e)}")
 
     @classmethod
     def _reset_section(cls, config_name: str, section: str, auto_save: bool = True) -> None:
@@ -247,7 +260,7 @@ class _ConfigFileHandler:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
                 cls._log_error("_reset_section", f"Failed to reset section {section} for config {config_name}: {str(e)}")
-                raise
+                raise ValueError(f"Failed to reset section {section} for config {config_name}: {str(e)}")
 
     @classmethod
     def _reset_config(cls, config_name: str, auto_save: bool = True) -> None:
@@ -263,7 +276,7 @@ class _ConfigFileHandler:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
                 cls._log_error("_reset_config", f"Failed to reset config {config_name}: {str(e)}")
-                raise
+                raise ValueError(f"Failed to reset config {config_name}: {str(e)}")
 
     @classmethod
     def _save_custom_config_to_file(cls, config_name: str) -> None:
@@ -287,16 +300,4 @@ class _ConfigFileHandler:
                 config_data.custom_config.read(config_data.file_handler_config.custom_config_path)
             except configparser.Error as e:
                 cls._log_error("_load_custom_config_from_file", f"Failed to load config from {config_data.file_handler_config.custom_config_path}: {e}")
-                raise
-
-    @classmethod
-    def _log_warning(cls, method_name: str, message: str) -> None:
-        """Log a warning message."""
-        full_message = f"Warning in {method_name}: {message}"
-        Logger.warning(full_message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)
-
-    @classmethod
-    def _log_error(cls, method_name: str, message: str) -> None:
-        """Log an error message."""
-        full_message = f"Error in {method_name}: {message}"
-        Logger.error(full_message, logger_name=FRAMEWORK_NAME, module_name=_ConfigFileHandler.__name__)
+                raise ValueError(f"Failed to load config from {config_data.file_handler_config.custom_config_path}: {e}")

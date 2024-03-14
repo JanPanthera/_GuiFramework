@@ -1,12 +1,14 @@
+# GuiFramework/tests/config/test_config_file_handler.py
+# TODO:
 
-from GuiFramework.utilities.config._config_file_handler import _ConfigFileHandler, ConfigFileHandlerConfig
 from GuiFramework.utilities.file_ops import FileOps
+from GuiFramework.utilities.config import ConfigFileHandler, ConfigFileHandlerConfig
 
 
 class TestConfigFileHandler:
     def __init__(self):
         self.config_name = "test_config"
-        _ConfigFileHandler._add_config(
+        ConfigFileHandler._add_config(
             config_name=self.config_name,
             handler_config=ConfigFileHandlerConfig(
                 config_path=FileOps.resolve_development_path(start_path=__file__, sub_path="config", root_marker=".root"),
@@ -21,10 +23,10 @@ class TestConfigFileHandler:
         )
 
     def test_method(self):
-        # _ConfigFileHandler._save_setting(config_name=self.config_name, section="section1", option="option2", value="value2")
-        print(_ConfigFileHandler._get_setting(config_name=self.config_name, section="section1", option="option1"))
-        print(_ConfigFileHandler._get_setting(config_name=self.config_name, section="section1", option="option2"))
-        _ConfigFileHandler._save_settings(
+        # ConfigFileHandler._save_setting(config_name=self.config_name, section="section1", option="option2", value="value2")
+        print(ConfigFileHandler._get_setting(config_name=self.config_name, section="section1", option="option1"))
+        print(ConfigFileHandler._get_setting(config_name=self.config_name, section="section1", option="option2"))
+        ConfigFileHandler._save_settings(
             config_name=self.config_name,
             settings={
                 "section2": {
@@ -34,7 +36,7 @@ class TestConfigFileHandler:
             },
             auto_save=False
         )
-        test = _ConfigFileHandler._get_settings(
+        test = ConfigFileHandler._get_settings(
             config_name=self.config_name,
             settings={
                 "section1": {
@@ -48,13 +50,17 @@ class TestConfigFileHandler:
             }
         )
         print(test)
-        _ConfigFileHandler._save_custom_config_to_file(config_name=self.config_name)
+        ConfigFileHandler._save_custom_config_to_file(config_name=self.config_name)
 
 
-if __name__ == '__main__':
+def main():
     try:
         test = TestConfigFileHandler()
         test.test_method()
     except Exception as e:
         print(e)
-    input("Press Enter to continue...")
+
+
+if __name__ == "__main__":
+    main()
+    input("Press any key to continue...")
