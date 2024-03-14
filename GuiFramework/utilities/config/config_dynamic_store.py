@@ -1,5 +1,4 @@
 # GuiFramework/utilities/config/config_dynamic_store.py
-# Public interface for the _ConfigDynamicStore class
 
 from typing import Any, Dict, List, Optional
 
@@ -25,9 +24,9 @@ class ConfigDynamicStore:
         _ConfigDynamicStore._delete_store(store_name)
 
     @staticmethod
-    def add_variable(store_name: str, variable_name: str, value: Any, section: str = "") -> None:
+    def add_variable(store_name: str, variable_name: str, value: Any) -> None:
         """Add a variable to a dynamic store."""
-        _ConfigDynamicStore._add_variable(store_name, variable_name, value, section)
+        _ConfigDynamicStore._add_variable(store_name, variable_name, value)
 
     @staticmethod
     def add_variables(store_name: str, variables: Dict[str, Any]) -> None:

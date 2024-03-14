@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from GuiFramework.utilities.config import ConfigDynamicStore
+from GuiFramework.utilities.config.config_dynamic_store import ConfigDynamicStore
 
 
 class ConfigDynamicStoreMixin:
@@ -20,12 +20,12 @@ class ConfigDynamicStoreMixin:
         return ConfigDynamicStore.get_store(self.config_name)
 
     def delete_store(self) -> None:
-        """Delete a dynamic store."""
+        """Delete the specified dynamic store."""
         ConfigDynamicStore.delete_store(self.config_name)
 
-    def add_variable(self, variable_name: str, value: Any, section: str = "") -> None:
+    def add_variable(self, variable_name: str, value: Any) -> None:
         """Add a variable to the dynamic store."""
-        ConfigDynamicStore.add_variable(self.config_name, variable_name, value, section)
+        ConfigDynamicStore.add_variable(self.config_name, variable_name, value)
 
     def add_variables(self, variables: Dict[str, Any]) -> None:
         """Add multiple variables to the dynamic store."""
