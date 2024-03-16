@@ -55,7 +55,7 @@ class _ConfigHandler(StaticLoggerMixin):
     def _add_custom_type_handler(cls, config_name: str, handler: CustomTypeHandlerBase) -> None:
         """Adds a custom type handler."""
         if not issubclass(handler.__class__, CustomTypeHandlerBase):
-            cls._log_warning("_add_custom_type_handler", f"Failed to add custom type handler: {handler} is not a subclass of CustomTypeHandlerBase.")
+            cls.log_warning("_add_custom_type_handler", f"Failed to add custom type handler: {handler} is not a subclass of CustomTypeHandlerBase.")
             return
         cls._custom_type_handlers.setdefault(config_name, {})[handler.get_type()] = handler
 
@@ -113,7 +113,7 @@ class _ConfigHandler(StaticLoggerMixin):
                 raise ValueError(f"Serialization failed: {serialized_value} is not a string.")
             _ConfigFileHandler._save_setting(config_name, section, option, serialized_value, auto_save)
         except Exception as e:
-            cls._log_error("_save_setting", f"Error saving setting '{option}' in [{config_name}][{section}]: {e}")
+            cls.log_error("_save_setting", f"Error saving setting '{option}' in [{config_name}][{section}]: {e}")
 
     @classmethod
     def _save_settings(cls, config_name: str, settings: Dict[str, Any], auto_save: bool = True) -> None:
@@ -159,12 +159,12 @@ class _ConfigHandler(StaticLoggerMixin):
     def _add_variable(cls, config_name: str, variable: ConfigVariable) -> None:
         """Add a new variable to the dynamic store."""
         if not isinstance(variable, ConfigVariable):
-            cls._log_error("_add_variable", f"Failed to add variable: {variable} is not an instance of ConfigVariable.")
+            cls.log_error("_add_variable", f"Failed to add variable: {variable} is not an instance of ConfigVariable.")
             raise TypeError(f"Expected variable to be of type 'ConfigVariable', got '{type(variable).__name__}' instead.")
         with cls._lock:
             section_variables = cls._config_variables.setdefault(config_name, {}).setdefault(variable.section, [])
             if variable.name in (existing_variable.name for existing_variable in section_variables):
-                cls._log_warning("_add_variable", f"Failed to add variable: {variable.name} is already present in section {variable.section}.")
+                cls.log_warning("_add_variable", f"Failed to add variable: {variable.name} is already present in section {variable.section}.")
                 return
             section_variables.append(variable)
         if variable.save_to_file and variable.is_persistable():
@@ -185,7 +185,7 @@ class _ConfigHandler(StaticLoggerMixin):
     def _set_variable(cls, config_name: str, updated_variable: ConfigVariable) -> None:
         """Set or update a variable in the dynamic store."""
         if not isinstance(updated_variable, ConfigVariable):
-            cls._log_error("_set_variable", f"Failed to set variable: {updated_variable} is not an instance of ConfigVariable.")
+            cls.log_error("_set_variable", f"Failed to set variable: {updated_variable} is not an instance of ConfigVariable.")
             raise TypeError(f"Expected variable to be of type 'ConfigVariable', got '{type(updated_variable).__name__}' instead.")
         with cls._lock:
             section_variables = cls._config_variables.get(config_name, {}).get(updated_variable.section, [])
@@ -194,14 +194,14 @@ class _ConfigHandler(StaticLoggerMixin):
                     continue
                 if existing_variable.type_ != updated_variable.type_:
                     section_variables[i] = updated_variable
-                    cls._log_info("_set_variable", f"Variable '{updated_variable.name}' replaced due to type change from {existing_variable.type_.__name__} to {updated_variable.type_.__name__}.")
+                    cls.log_info("_set_variable", f"Variable '{updated_variable.name}' replaced due to type change from {existing_variable.type_.__name__} to {updated_variable.type_.__name__}.")
                 else:
                     existing_variable.value = updated_variable.value
-                    cls._log_info("_set_variable", f"Value of variable '{updated_variable.name}' updated in section '{updated_variable.section}'.")
+                    cls.log_info("_set_variable", f"Value of variable '{updated_variable.name}' updated in section '{updated_variable.section}'.")
                 if existing_variable.save_to_file and existing_variable.is_persistable():
                     _ConfigFileHandler._save_setting(config_name, existing_variable.section, existing_variable.name, existing_variable.serialize(), existing_variable.auto_save)
                 return
-            cls._log_warning("_set_variable", f"Failed to set variable: '{updated_variable.name}' is not present in section '{updated_variable.section}'.")
+            cls.log_warning("_set_variable", f"Failed to set variable: '{updated_variable.name}' is not present in section '{updated_variable.section}'.")
 
     @classmethod
     def _set_variables(cls, config_name: str, updated_variables: List[ConfigVariable]) -> None:
@@ -218,7 +218,7 @@ class _ConfigHandler(StaticLoggerMixin):
             section_variables = cls._config_variables.get(config_name, {}).get(section, [])
             variable = next((variable for variable in section_variables if variable.name == variable_name), None)
             if variable is None:
-                cls._log_warning("_get_variable", f"Variable '{variable_name}' not found in section '{section}' of config '{config_name}'.")
+                cls.log_warning("_get_variable", f"Variable '{variable_name}' not found in section '{section}' of config '{config_name}'.")
             return variable
 
     @classmethod
@@ -239,7 +239,7 @@ class _ConfigHandler(StaticLoggerMixin):
             section_variables = cls._config_variables.get(config_name, {}).get(section, [])
             updated_section_variables = [variable for variable in section_variables if variable.name != variable_name]
             if len(section_variables) == len(updated_section_variables):
-                cls._log_warning("_delete_variable", f"Failed to delete variable: '{variable_name}' not found in section '{section}' of config '{config_name}'.")
+                cls.log_warning("_delete_variable", f"Failed to delete variable: '{variable_name}' not found in section '{section}' of config '{config_name}'.")
             else:
                 cls._config_variables[config_name][section] = updated_section_variables
 

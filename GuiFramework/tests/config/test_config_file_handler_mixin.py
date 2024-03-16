@@ -11,7 +11,7 @@ class TestConfigFileHandlerMixin(ConfigFileHandlerMixin):
 
     def __init__(self) -> None:
         """Initialize test configuration file handler."""
-        # Purge to ensure a clean slate
+        # Purge to ensure a clean state
         FileOps.purge_directory(FileOps.resolve_development_path(__file__, "config", ".root"))
         super().__init__(
             config_name="test-config",
