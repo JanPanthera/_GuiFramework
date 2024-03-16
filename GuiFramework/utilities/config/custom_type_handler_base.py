@@ -35,6 +35,16 @@ class CustomTypeHandlerBase(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_type(self):
+        """
+        Returns the type that the handler is for.
+
+        Raises:
+            NotImplementedError: This method must be overridden in derived classes.
+        """
+        raise NotImplementedError
+
     @staticmethod
     def validate_type(value, expected_type, type_name):
         """
