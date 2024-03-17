@@ -1,13 +1,14 @@
 # GuiFramework/gui/gui_manager/gui_builder.py
 
 import json
-from GuiFramework.utilities import setup_default_logger
+
+from GuiFramework.utilities.logging import Logger
 
 
 class GuiBuilder:
-    def __init__(self, logger=None):
-        self.logger = logger or setup_default_logger(log_name="GuiBuilder", log_directory="logs/GuiFramework")
+    def __init__(self):
         self.widget_builders = {}
+        self.logger = Logger.get_logger("GuiFramework")
 
     def register_widget_builder(self, widget_builder):
         self.widget_builders[widget_builder.widget_type] = widget_builder
@@ -19,7 +20,7 @@ class GuiBuilder:
             elements = self._process_elements(master, config, instance)
             return elements
         except (IOError, json.JSONDecodeError) as e:
-            self.logger.error(f"Failed to read or parse config file {config_path}: {e}")
+            self.logger.log_error(f"Failed to read or parse config file {config_path}: {e}", "GuiBuilder")
             raise
 
     def _process_elements(self, parent, element_config, instance):
