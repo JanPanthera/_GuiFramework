@@ -5,22 +5,24 @@ import OpenGL.GL as gl
 
 from GuiFramework.core.constants import FRAMEWORK_NAME
 from GuiFramework.mixins import EventMixin
-from GuiFramework.utilities.logging import LoggerMixin
+from GuiFramework.utilities.logging import Logger
 
 
-class Window(LoggerMixin, EventMixin):
+class Window(EventMixin):
 
     def __init__(self, title="Window", width=800, height=600):
-        LoggerMixin.__init__(self, logger_name=FRAMEWORK_NAME, module_name=Window.__name__)
+        self.logger = Logger(FRAMEWORK_NAME)
+
+        EventMixin.__init__(self)
 
         if not glfw.init():
-            self.error("Failed to initialize GLFW")
+            self.logger.log_error("Failed to initialize GLFW", "Window")
             raise Exception("Failed to initialize GLFW")
 
         self.window = glfw.create_window(width, height, title, None, None)
         if not self.window:
             glfw.terminate()
-            self.error("Failed to create GLFW window")
+            self.logger.log_error("Failed to create GLFW window", "Window")
             raise Exception("Failed to create GLFW window")
 
         glfw.make_context_current(self.window)
@@ -31,13 +33,14 @@ class Window(LoggerMixin, EventMixin):
 
     # Application-specific methods
     def update(self):
-        self.frame_count += 1
-        current_time = glfw.get_time()
-        if current_time - self.last_time >= 1.0:  # if one second has passed
-            fps = self.frame_count / (current_time - self.last_time)
-            glfw.set_window_title(self.window, f"Window - {fps:.2f}")
-            self.frame_count = 0
-            self.last_time = current_time
+        # self.frame_count += 1
+        # current_time = glfw.get_time()
+        # if current_time - self.last_time >= 1.0:  # if one second has passed
+        #     fps = self.frame_count / (current_time - self.last_time)
+        #     glfw.set_window_title(self.window, f"Window - {fps:.2f}")
+        #     self.frame_count = 0
+        #     self.last_time = current_time
+        pass
 
     def render(self):
         gl.glClearColor(0.529, 0.808, 0.922, 1.0)

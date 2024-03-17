@@ -5,14 +5,14 @@ from .window import Window
 from GuiFramework.core.constants import FRAMEWORK_NAME
 from GuiFramework.mixins import EventMixin
 from GuiFramework.utilities import FileOps
-from GuiFramework.utilities.logging import Logger, LOG_LEVEL
+from GuiFramework.utilities.logging import Logger
 
 
 class Application(EventMixin):
 
     def __init__(self):
         EventMixin.__init__(self)
-        self._log_error = lambda message: Logger.error(message, logger_name=FRAMEWORK_NAME, module_name=Application.__name__)
+        self.logger = Logger(FRAMEWORK_NAME, Application.__name__)
 
         self.window = Window()
         self._app_init()
@@ -42,7 +42,7 @@ class Application(EventMixin):
                 self.window.poll_events()
                 self.window.swap_buffers()
             except Exception as e:
-                self._log_error(f"An error occurred in the run loop: {e}")
+                self.logger.log_error("An error occurred in the run loop", "Application")
                 break
         self._app_cleanup()
 
@@ -52,25 +52,25 @@ class Application(EventMixin):
             self.init()
             self._app_run()
         except Exception as e:
-            self._log_error(f"An error occurred during application initialization: {e}")
+            self.logger.log_error("An error occurred during application initialization", "Application")
 
     def _app_update(self):
         try:
             self.update()
             self.window.update()
         except Exception as e:
-            self._log_error(f"An error occurred during application update: {e}")
+            self.logger.log_error("An error occurred during application update", "Application")
 
     def _app_render(self):
         try:
             self.render()
             self.window.render()
         except Exception as e:
-            self._log_error(f"An error occurred during application rendering: {e}")
+            self.logger.log_error("An error occurred during application rendering", "Application")
 
     def _app_cleanup(self):
         try:
             self.cleanup()
             self.window.cleanup()
         except Exception as e:
-            self._log_error(f"An error occurred during application cleanup: {e}")
+            self.logger.log_error("An error occurred during application cleanup", "Application")
