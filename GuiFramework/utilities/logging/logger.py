@@ -1,50 +1,56 @@
-# GuiFramework/utilities/logger.py
+# GuiFramework/utilities/logging/logger.py
 
-from ._logger_core import _LoggerCore, LOG_LEVEL
+from typing import Optional
+from .internal._logger_core import _LoggerCore, LOG_LEVEL, LoggerConfig
 
 
 class Logger:
-    @staticmethod
-    def add_config(logger_name="default", config=None):
-        _LoggerCore._add_config(logger_name, config)
+    """Manages logging instances."""
+    _loggers: dict = {}
 
-    @staticmethod
-    def change_config(logger_name="default", config=None):
-        _LoggerCore._change_config(logger_name, config)
+    def __init__(self, config: LoggerConfig, rotate_on_init: bool = False) -> None:
+        """Initialize or retrieve a logger."""
+        self.config: LoggerConfig = config or LoggerConfig()
+        Logger.add_logger(self.config)
+        if rotate_on_init:
+            self.rotate_log()
 
-    @staticmethod
-    def remove_config(logger_name="default"):
-        _LoggerCore._remove_config(logger_name)
+    @classmethod
+    def add_logger(cls, config: LoggerConfig) -> Optional['Logger']:
+        """Add a new logger configuration."""
+        if isinstance(config, LoggerConfig) and config.logger_name not in cls._loggers:
+            cls._loggers[config.logger_name] = Logger(config)
+            return cls._loggers[config.logger_name]
 
-    @staticmethod
-    def log(message, level=LOG_LEVEL.INFO, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, level, logger_name, module_name, auto_newline)
+    @classmethod
+    def get_logger(cls, logger_name: str = "default") -> 'Logger':
+        """Retrieve an existing logger by name."""
+        return cls._loggers.get(logger_name, ValueError(f"Logger with name '{logger_name}' not found. Please add it before getting."))
 
-    @staticmethod
-    def debug(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.DEBUG, logger_name, module_name, auto_newline)
+    def rotate_log(self) -> None:
+        """Rotate the log file."""
+        _LoggerCore._rotate_file(self.config)
 
-    @staticmethod
-    def info(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.INFO, logger_name, module_name, auto_newline)
+    def log(self, message: str, level: LOG_LEVEL, module_name: Optional[str] = None) -> None:
+        """Log a message at a specified level."""
+        _LoggerCore._log(message, level, module_name or self.config.module_name, self.config)
 
-    @staticmethod
-    def warning(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.WARNING, logger_name, module_name, auto_newline)
+    def log_debug(self, message: str, module_name: Optional[str] = None) -> None:
+        """Log a debug message."""
+        self.log(message, LOG_LEVEL.DEBUG, module_name)
 
-    @staticmethod
-    def error(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.ERROR, logger_name, module_name, auto_newline)
+    def log_info(self, message: str, module_name: Optional[str] = None) -> None:
+        """Log an info message."""
+        self.log(message, LOG_LEVEL.INFO, module_name)
 
-    @staticmethod
-    def fatal(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.FATAL, logger_name, module_name, auto_newline)
+    def log_warning(self, message: str, module_name: Optional[str] = None) -> None:
+        """Log a warning message."""
+        self.log(message, LOG_LEVEL.WARNING, module_name)
 
-    @staticmethod
-    def critical(message, logger_name="default", module_name="", auto_newline=True):
-        _LoggerCore._log(message, LOG_LEVEL.CRITICAL, logger_name, module_name, auto_newline)
+    def log_error(self, message: str, module_name: Optional[str] = None) -> None:
+        """Log an error message."""
+        self.log(message, LOG_LEVEL.ERROR, module_name)
 
-    @staticmethod
-    def rotate_file(logger_name="default"):
-        config = _LoggerCore.logger_configs.get(logger_name)
-        _LoggerCore._rotate_file(config)
+    def log_critical(self, message: str, module_name: Optional[str] = None) -> None:
+        """Log a critical message."""
+        self.log(message, LOG_LEVEL.CRITICAL, module_name)
