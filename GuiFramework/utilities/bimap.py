@@ -1,3 +1,6 @@
+# GuiFramework/utilities/bimap.py
+
+
 class BiMap:
     def __init__(self):
         self.forward = {}

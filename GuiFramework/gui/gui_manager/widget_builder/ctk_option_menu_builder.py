@@ -1,18 +1,17 @@
-# ctk_option_menu_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/ctk_option_menu_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/ctk_option_menu_builder.py
 
 from customtkinter import CTkOptionMenu
-from .abstract_ctk_builder import AbstractCtkBuilder
-from ....utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
+from GuiFramework.utilities.logging import Logger
 
 
 class CtkOptionMenuBuilder(AbstractCtkBuilder):
-    def __init__(self, config_manager=None, localize_func=None, logger=None):
-        super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger('CtkOptionMenuBuilder')
+    def __init__(self, config_manager=None, localize_func=None):
+        super().__init__(config_manager, localize_func)
 
     @property
     def widget_type(self):
-        return 'CTkOptionMenu'
+        return "CTkOptionMenu"
 
     def create_widget(self, master, widget_properties, instance):
         try:
@@ -25,8 +24,7 @@ class CtkOptionMenuBuilder(AbstractCtkBuilder):
                     widget_properties[property_name] = handler(widget_properties[property_name], instance)
 
             widget = CTkOptionMenu(master, **widget_properties)
-            self.logger.debug(f"CTkOptionMenu created with properties: {widget_properties}")
+            self.logger.log_debug(f"CTkOptionMenu created with properties: {widget_properties}", "CtkOptionMenuBuilder")
             return widget
         except Exception as e:
-            self.logger.error(f"Error creating CTkOptionMenu: {e}")
-            return None
+            self.logger.log_error(f"Error creating CTkOptionMenu: {e}", "CtkOptionMenuBuilder")

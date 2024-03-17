@@ -1,13 +1,14 @@
-# locale_updater.py
+# GuiFramework/utilities/locale_updater.py
 
 import os
 import re
 import json
 import copy
 import threading
+
 from collections import OrderedDict
-from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import cpu_count
+
+from GuiFramework.utilities.logging import Logger
 
 
 class LocaleUpdater:
@@ -19,7 +20,8 @@ class LocaleUpdater:
     GUI_FILE_PATTERN = re.compile(r"(.+)\.gui\.json$")
 
     def __init__(self, locales_dir=None, source_language=None, target_languages=None, extract_strings=False,
-                 localize_call_patterns=None, sort_locale_file_keys=None, logger=None):
+                 localize_call_patterns=None, sort_locale_file_keys=None):
+        self.logger = Logger.get_logger("GuiFramework")
         self.extract_strings = extract_strings
         self.sort_locale_file_keys = sort_locale_file_keys or self.SORT_LOCALE_FILE_KEYS
         self.locales_dir = locales_dir or self.DEFAULT_LOCALES_DIR
@@ -30,8 +32,6 @@ class LocaleUpdater:
         self.extracted_strings = set()
         self.lock = threading.RLock()
 
-        self.logger = logger
-
     def update_settings(self, **kwargs):
         with self.lock:
             self.locales_dir = kwargs.get("locales_dir", self.locales_dir)
@@ -40,7 +40,6 @@ class LocaleUpdater:
             self.target_languages = kwargs.get("target_languages", self.target_languages)
             self.localize_call_patterns = kwargs.get("localize_call_patterns", self.localize_call_patterns)
             self.sort_locale_file_keys = kwargs.get("sort_locale_file_keys", self.sort_locale_file_keys)
-            self.logger = kwargs.get("logger", self.logger)
 
     def update_locales(self, source_dir):
         if self.extract_strings:
@@ -67,8 +66,7 @@ class LocaleUpdater:
                     with self.lock:
                         self.extracted_strings.update(matches)
         except OSError as e:
-            if self.logger:
-                self.logger.error(f"Error opening file {file_path}: {str(e)}")
+            self.logger.log_error(f"Error opening file {file_path}: {str(e)}", "LocaleUpdater")
 
     def _process_gui_file(self, file_path):
         try:
@@ -89,14 +87,12 @@ class LocaleUpdater:
                         with self.lock:
                             self.extracted_strings.add(text_value)
         except OSError as e:
-            if self.logger:
-                self.logger.error(f"Error opening file {file_path}: {str(e)}")
+            self.logger.log_error(f"Error opening file {file_path}: {str(e)}", "LocaleUpdater")
 
     def _merge_extracted_strings_with_source_file(self):
         with self.lock:
             if not self.extracted_strings:
-                if self.logger:
-                    self.logger.info("No strings to merge with source locale file")
+                self.logger.log_info("No strings to merge with source locale file", "LocaleUpdater")
                 return
 
         source_locale_data = self._load_json_locale_file(self.source_locale_file)
@@ -112,15 +108,13 @@ class LocaleUpdater:
         for string in self.extracted_strings:
             if not any(string in section for section in source_locale_data.values()):
                 source_locale_data["default"][string] = string
-                if self.logger:
-                    self.logger.info(f"Added string '{string}' to section 'default' in source locale file: {self.source_locale_file}")
+                self.logger.log_info(f"Added string '{string}' to section 'default' in source locale file: {self.source_locale_file}", "LocaleUpdater")
 
         for section in source_locale_data:
             for string in list(source_locale_data[section]):
                 if string not in self.extracted_strings and section != "unused":
                     source_locale_data["unused"][string] = source_locale_data[section].pop(string)
-                    if self.logger:
-                        self.logger.info(f"Moved string '{string}' from section '{section}' to section 'unused' in source locale file: {self.source_locale_file}")
+                    self.logger.log_info(f"Moved string '{string}' from section '{section}' to section 'unused' in source locale file: {self.source_locale_file}", "LocaleUpdater")
 
         if self.sort_locale_file_keys:
             for section in source_locale_data:
@@ -133,15 +127,13 @@ class LocaleUpdater:
         with self.lock:
             source_locale_data = self._load_json_locale_file(self.source_locale_file)
             if source_locale_data is None:
-                if self.logger:
-                    self.logger.error(f"Failed to load source locale file: {self.source_locale_file}")
+                self.logger.log_error(f"Failed to load source locale file: {self.source_locale_file}", "LocaleUpdater")
                 return
 
             for language in self.target_languages:
                 target_locale_data = self._load_json_locale_file(os.path.join(self.locales_dir, f"locale_{language}.json"))
                 if target_locale_data is None:
-                    if self.logger:
-                        self.logger.error(f"Failed to load target locale file: {language}")
+                    self.logger.log_error(f"Failed to load target locale file: {language}", "LocaleUpdater")
                     continue
 
                 target_keys = {}
@@ -166,19 +158,16 @@ class LocaleUpdater:
             except FileNotFoundError:
                 with open(file_path, "w", encoding="utf-8") as file:
                     json.dump({}, file, ensure_ascii=False, indent=3)
-                    if self.logger:
-                        self.logger.info(f"Locale file: {file_path} was not found. Created new file with valid JSON format.")
+                    self.logger.log_info(f"Locale file: {file_path} was not found. Created new file with valid JSON format.", "LocaleUpdater")
                 locale_data = OrderedDict()
             except json.JSONDecodeError:
                 if os.path.getsize(file_path) == 0:
                     with open(file_path, "w", encoding="utf-8") as file:
                         json.dump({}, file, ensure_ascii=False, indent=3)
-                        if self.logger:
-                            self.logger.info(f"Locale file: {file_path} was empty. Added valid JSON format to file.")
+                        self.logger.log_info(f"Locale file: {file_path} was empty. Added valid JSON format to file.", "LocaleUpdater")
                     locale_data = OrderedDict()
                 else:
-                    if self.logger:
-                        self.logger.error(f"Invalid JSON format in {file_path}. Review the file and try again.")
+                    self.logger.log_error(f"Invalid JSON format in {file_path}. Review the file and try again.", "LocaleUpdater")
                     return None
 
             locale_data.setdefault("default", OrderedDict())

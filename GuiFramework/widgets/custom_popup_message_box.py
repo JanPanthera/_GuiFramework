@@ -11,8 +11,8 @@ class CustomPopupMessageBox(ctk.CTkToplevel):
         self.title(title)
         self.resizable(False, False)
 
-        self.attributes('-alpha', 0)
-        self.attributes('-toolwindow', True)
+        self.attributes("-alpha", 0)
+        self.attributes("-toolwindow", True)
 
         self.frame = ctk.CTkFrame(self)
         self.frame.pack(pady=20, padx=20, fill="both", expand=True)
@@ -27,7 +27,7 @@ class CustomPopupMessageBox(ctk.CTkToplevel):
             btn.pack(pady=10, padx=10, side="left", expand=True)
 
         self.after(100, self.position_center_main_window)
-        self.after(200, self.attributes, '-alpha', 1)
+        self.after(200, self.attributes, "-alpha", 1)
         self.grab_set()
 
     def position_center_main_window(self):

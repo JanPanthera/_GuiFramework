@@ -1,18 +1,17 @@
-# ctk_frame_builder.py ~ GuiFramework/gui/gui_manager/widget_builder/ctk_frame_builder.py
+# GuiFramework/gui/gui_manager/widget_builder/ctk_frame_builder.py
 
 from customtkinter import CTkFrame
-from .abstract_ctk_builder import AbstractCtkBuilder
-from ....utilities import setup_default_logger
+from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
+from GuiFramework.utilities.logging import Logger
 
 
 class CtkFrameBuilder(AbstractCtkBuilder):
-    def __init__(self, config_manager=None, localize_func=None, logger=None):
-        super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger('CtkFrameBuilder')
+    def __init__(self, config_manager=None, localize_func=None):
+        super().__init__(config_manager, localize_func)
 
     @property
     def widget_type(self):
-        return 'CTkFrame'
+        return "CTkFrame"
 
     def create_widget(self, master, widget_properties, instance):
         try:
@@ -25,8 +24,7 @@ class CtkFrameBuilder(AbstractCtkBuilder):
                     widget_properties[property_name] = handler(widget_properties[property_name], instance)
 
             widget = CTkFrame(master, **widget_properties)
-            self.logger.debug(f"CTkFrame created with properties: {widget_properties}")
+            self.logger.log_debug(f"CTkFrame created with properties: {widget_properties}", "CtkFrameBuilder")
             return widget
         except Exception as e:
-            self.logger.error(f"Error creating CTkFrame: {e}")
-            return None
+            self.logger.log_error(f"Error creating CTkFrame: {e}", "CtkFrameBuilder")

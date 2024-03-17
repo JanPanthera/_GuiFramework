@@ -1,17 +1,17 @@
-# gui_manager.py ~ GuiFramework/gui/gui_manager/gui_manager.py
+# GuiFramework/gui/gui_manager/gui_manager.py
 
-from .gui_builder import GuiBuilder
-from ...utilities import setup_default_logger
+from GuiFramework.utilities.logging import Logger
+from GuiFramework.gui.gui_manager.gui_builder import GuiBuilder
 
 
 class GuiManager:
-    def __init__(self, logger=None):
-        self.logger = logger or setup_default_logger('GuiManager')
-        self.gui_builder = GuiBuilder(self.logger)
+    def __init__(self):
+        self.logger = Logger.get_logger("GuiFramework")
+        self.gui_builder = GuiBuilder()
         self.observers = []
         self.components = {}
         self.widgets = {}
-        self.logger.info("GuiManager initialized.")
+        self.logger.log_info("GuiManager initialized.", "GuiManager")
 
     def subscribe(self, observer):
         self.observers.append(observer)
@@ -30,15 +30,15 @@ class GuiManager:
         }
 
     def build(self):
-        self.logger.info("Starting GUI build process.")
+        self.logger.log_info("Starting GUI build process.", "GuiManager")
         try:
             for component_name, info in self.components.items():
-                self.logger.debug(f"Building component: {component_name}")
+                self.logger.log_debug(f"Building component: {component_name}", "GuiManager")
                 self.widgets[component_name] = self.gui_builder.build(info["master"], info["config"], info["instance"])
             self._notify()
-            self.logger.info("GUI build completed successfully.")
+            self.logger.log_info("GUI build completed successfully.", "GuiManager")
         except Exception as e:
-            self.logger.error(f"Error during GUI build process: {e}")
+            self.logger.log_error(f"Error during GUI build process: {e}", "GuiManager")
             raise
 
     def _notify(self):

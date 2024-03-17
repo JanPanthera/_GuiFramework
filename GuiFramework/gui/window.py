@@ -1,9 +1,11 @@
-# window.py / GuiFramework
+# GuiFramework/gui/window.py
 
 import customtkinter as ctk
+
 from enum import Enum, auto
-from GuiFramework.utilities import get_dpi_scaling_factor
-from GuiFramework.utilities.utils import Debouncer, setup_default_logger
+
+from GuiFramework.utilities.logging import Logger
+from GuiFramework.utilities.utils import Debouncer, Utils
 
 
 class WindowState(Enum):
@@ -21,7 +23,7 @@ class WindowSettings:
     WINDOW_POSITION = "window_position"
     WINDOW_STATE = "window_state"
     UI_THEME = "ui_theme"
-    UI_COLOR_THEME = "ui_color_theme"  # library themse are green, blue, dark-blue
+    UI_COLOR_THEME = "ui_color_theme"  # library default themes are green, blue, dark-blue
     RESIZEABLE = "resizeable"
     USE_HIGH_DPI = "use_high_dpi"
     CENTERED = "centered"
@@ -31,9 +33,11 @@ class WindowSettings:
 
 class Window(ctk.CTk):
     # Initialization and Configuration
-    def __init__(self, logger=None, **kwargs):
+
+    def __init__(self, **kwargs):
         super().__init__()
-        self.attributes('-alpha', 0)
+        self.logger = Logger.get_logger("GuiFramework")
+        self.attributes("-alpha", 0)
         self.WINDOW_SETTINGS = {
             "window_title": "No Title Provided",
             "window_icon": None,
@@ -48,11 +52,10 @@ class Window(ctk.CTk):
             "on_close_callback": None,
             "lazy_init": False
         }
-        self.logger = logger or setup_default_logger()
         self.configs = {**self.WINDOW_SETTINGS, **kwargs}
         self.initialized = False
         self._setup_window()
-        self.after(1000, self.attributes, '-alpha', 1)
+        self.after(1000, self.attributes, "-alpha", 1)
 
     def _setup_window(self):
         self.hide()
@@ -60,7 +63,7 @@ class Window(ctk.CTk):
         self.window_position = self.configs[WindowSettings.WINDOW_POSITION]
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.high_dpi_scale = get_dpi_scaling_factor()
+        self.high_dpi_scale = Utils.Utils.get_dpi_scaling_factor()
         self.resize_debouncer = Debouncer(delay=0.1)
         self.move_debouncer = Debouncer(delay=0.1)
         self._on_window_resize_debounced = self.resize_debouncer(self._on_window_resize)
@@ -100,87 +103,79 @@ class Window(ctk.CTk):
             if self.configs[WindowSettings.CENTERED]:
                 self.center_window()
         except Exception as e:
-            self.logger.error(f"Error applying settings: {e}")
+            self.logger.log_error(f"Error applying settings: {e}", "Window")
         self.initialized = True
-        self.logger.info("Window configuration applied.")
 
     # UI Adjustment Methods
     def show(self):
         if not self.initialized:
             self.apply_configuration()
         self.deiconify()
-        self.logger.info("Window shown.")
 
     def hide(self):
         self.withdraw()
-        self.logger.info("Window hidden.")
 
     def set_window_title(self, title):
         try:
             self.title(title)
-            self.logger.info(f"Window title set to '{title}'.")
         except Exception as e:
-            self.logger.error(f"Failed to set window title to '{title}': {e}")
+            self.logger.log_error(f"Failed to set window title to '{title}': {e}", "Window")
 
     def set_window_icon(self, icon_path):
         if icon_path is None:
-            self.logger.warning("No icon path provided, skipping setting window icon.")
+            self.logger.log_warning("No icon path provided, skipping setting window icon.", "Window")
             return
         try:
             self.iconbitmap(icon_path)
-            self.logger.info(f"Window icon set to {icon_path}")
         except Exception as e:
-            self.logger.error(f"Failed to set window icon from {icon_path}: {e}")
+            self.logger.log_error(f"Failed to set window icon from {icon_path}: {e}", "Window")
 
     def set_window_size(self, size):
         try:
             self.window_size = size
-            width = int(size[0] // get_dpi_scaling_factor())
-            height = int(size[1] // get_dpi_scaling_factor())
+            width = int(size[0] // Utils.get_dpi_scaling_factor())
+            height = int(size[1] // Utils.get_dpi_scaling_factor())
             pos_x, pos_y = self.window_position
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window size set to {self.window_size}.")
         except ValueError:
-            self.logger.error(f"Invalid window size values: size={size}. Must be integers.")
+            self.logger.log_error(f"Invalid window size values: size={size}. Must be integers.", "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window size to {size}: {e}")
+            self.logger.log_error(f"Failed to set window size to {size}: {e}", "Window")
 
     def set_window_position(self, position):
         try:
             width, height = self.window_size
-            width = int(width // get_dpi_scaling_factor())
-            height = int(height // get_dpi_scaling_factor())
+            width = int(width // Utils.get_dpi_scaling_factor())
+            height = int(height // Utils.get_dpi_scaling_factor())
             pos_x, pos_y = max(int(position[0]), 0), max(int(position[1]), 0)
             self.window_position = (pos_x, pos_y)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window position set to {self.window_position}.")
         except ValueError:
-            self.logger.error(f"Invalid window position values: position={position}. Must be integers.")
+            self.logger.log_error(f"Invalid window position values: position={position}. Must be integers.", "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window position to {position}: {e}")
+            self.logger.log_error(f"Failed to set window position to {position}: {e}", "Window")
 
     def set_window_geometry(self, size, position):
         try:
             self.window_size = size
             self.window_position = position
-            width = int(size[0] // get_dpi_scaling_factor())
-            height = int(size[1] // get_dpi_scaling_factor())
+            width = int(size[0] // Utils.get_dpi_scaling_factor())
+            height = int(size[1] // Utils.get_dpi_scaling_factor())
             pos_x, pos_y = max(int(position[0]), 0), max(int(position[1]), 0)
             self.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
             self.update()
-            self.logger.info(f"Window geometry set to {self.window_size}+{self.window_position}.")
         except ValueError:
-            self.logger.error(f"Invalid window geometry values: size={size}, position={position}. Must be integers.")
+            self.logger.log_error(f"Invalid window geometry values: size={size}, position={position}. Must be integers.", "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window geometry to {size}+{position}: {e}")
+            self.logger.log_error(f"Failed to set window geometry to {size}+{position}: {e}", "Window")
 
     def center_window(self):
         if not self.winfo_ismapped():
             self.deiconify()
         self.update_idletasks()
-        high_dpi_scale = get_dpi_scaling_factor()
+        high_dpi_scale = Utils.get_dpi_scaling_factor()
         screen_width = int(self.winfo_screenwidth() * high_dpi_scale)
         screen_height = int(self.winfo_screenheight() * high_dpi_scale)
         titlebar_height = int(self.winfo_rooty() - self.winfo_y())
@@ -202,103 +197,91 @@ class Window(ctk.CTk):
             elif state == WindowState.NORMAL:
                 self._restore_normal()
             else:
-                self.logger.error(f"Unhandled window state: {state}")
+                self.logger.log_error(f"Unhandled window state: {state}", "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window state: {e}")
+            self.logger.log_error(f"Failed to set window state: {e}", "Window")
 
     def _enable_fullscreen(self):
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.state('zoomed')
-        self.attributes('-fullscreen', True)
+        self.state("zoomed")
+        self.attributes("-fullscreen", True)
         self.update()
-        self.logger.info("Fullscreen mode enabled.")
 
     def _enable_fullscreen_borderless(self):
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.state('zoomed')
+        self.state("zoomed")
         self.overrideredirect(True)
         self.update()
-        self.logger.info("Borderless fullscreen mode enabled.")
 
     def _enable_borderless(self):
         self.overrideredirect(True)
         self.update()
-        self.logger.info("Borderless mode enabled.")
 
     def _maximize_window(self):
-        self.state('zoomed')
+        self.state("zoomed")
         self.update()
-        self.logger.info("Maximized mode enabled.")
 
     def _restore_normal(self):
-        was_fullscreen = self.attributes('-fullscreen')
-        self.state('normal')
+        was_fullscreen = self.attributes("-fullscreen")
+        self.state("normal")
         self.overrideredirect(False)
         self._windows_set_titlebar_color(self._get_appearance_mode())
         if was_fullscreen:
-            self.attributes('-fullscreen', False)
+            self.attributes("-fullscreen", False)
         self.set_window_geometry(self.window_size_before_fullscreen, self.window_position_before_fullscreen)
         self.update()
-        self.logger.info("Window restored to normal mode.")
 
     def set_window_transparency(self, transparency):
         try:
             if not 0.0 <= transparency <= 1.0:
                 raise ValueError("Transparency value must be between 0.0 and 1.0.")
-            self.attributes('-alpha', transparency)
-            self.logger.info(f"Window transparency set to {transparency}.")
+            self.attributes("-alpha", transparency)
         except ValueError as ve:
-            self.logger.error(ve)
+            self.logger.log_error(ve, "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window transparency: {e}")
+            self.logger.log_error(f"Failed to set window transparency: {e}", "Window")
 
     def set_always_on_top(self, always_on_top):
         try:
-            self.attributes('-topmost', always_on_top)
-            state = 'enabled' if always_on_top else 'disabled'
-            self.logger.info(f"Always-on-top mode {state}.")
+            self.attributes("-topmost", always_on_top)
+            state = "enabled" if always_on_top else "disabled"
         except Exception as e:
-            self.logger.error(f"Failed to set always-on-top mode: {e}")
+            self.logger.log_error(f"Failed to set always-on-top mode: {e}", "Window")
 
     def set_ui_theme(self, theme):
         try:
             ctk.set_appearance_mode(theme)
-            self.logger.info(f"UI theme set to {theme}.")
         except Exception as e:
-            self.logger.error(f"Failed to set UI theme to {theme}: {e}")
+            self.logger.log_error(f"Failed to set UI theme to {theme}: {e}", "Window")
             self.set_ui_theme("system")
 
     def set_ui_color_theme(self, color_theme):
         try:
             ctk.set_default_color_theme(color_theme)
-            self.logger.info(f"UI color theme set to {color_theme}.")
         except Exception as e:
-            self.logger.error(f"Failed to set UI color theme to {color_theme}: {e}")
+            self.logger.log_error(f"Failed to set UI color theme to {color_theme}: {e}", "Window")
             self.set_ui_color_theme("blue")
 
     def set_window_resizeable(self, resizeable):
         try:
             self.resizable(resizeable, resizeable)
-            state = 'enabled' if resizeable else 'disabled'
-            self.logger.info(f"Window resizeability {state}.")
+            state = "enabled" if resizeable else "disabled"
         except Exception as e:
-            self.logger.error(f"Failed to change window resizeability to {resizeable}: {e}")
+            self.logger.log_error(f"Failed to change window resizeability to {resizeable}: {e}", "Window")
 
     def set_high_dpi(self, enable):
         if enable:
-            if hasattr(ctk, 'activate_automatic_dpi_awareness'):
+            if hasattr(ctk, "activate_automatic_dpi_awareness"):
                 ctk.activate_automatic_dpi_awareness()
-                self.high_dpi_scale = get_dpi_scaling_factor()
-                self.logger.info(f"High DPI mode activated. Scale: {self.high_dpi_scale}")
+                self.high_dpi_scale = Utils.get_dpi_scaling_factor()
             else:
-                self.logger.error("Reactivating Automatic DPI awareness is not supported on this customtkinter repository.")
+                self.logger.log_error("Reactivating Automatic DPI awareness is not supported on this customtkinter repository.", "Window")
         else:
             ctk.deactivate_automatic_dpi_awareness()
             self.high_dpi_scale = 1.0
             self.update()
-            self.logger.info(f"High DPI mode deactivated.")
 
     # Event Callback and Handling
     def set_window_event_callback(self, callback):
@@ -306,11 +289,10 @@ class Window(ctk.CTk):
             if not callable(callback):
                 raise ValueError("Provided callback is not callable.")
             self.on_window_close_callback = callback
-            self.logger.info("Window event callback set successfully.")
         except ValueError as ve:
-            self.logger.error(ve)
+            self.logger.log_error(ve, "Window")
         except Exception as e:
-            self.logger.error(f"Failed to set window event callback: {e}")
+            self.logger.log_error(f"Failed to set window event callback: {e}", "Window")
 
     def _on_configure(self, event):
         if self.initialized:
@@ -318,35 +300,32 @@ class Window(ctk.CTk):
                 self._on_window_resize_debounced()
                 self._on_window_move_debounced()
             except Exception as e:
-                self.logger.error(f"Error handling window configuration change: {e}")
+                self.logger.log_error(f"Error handling window configuration change: {e}", "Window")
 
     def _on_window_resize(self):
         try:
             if self.window_size != (self.winfo_width(), self.winfo_height()):
                 self.window_size = (self.winfo_width(), self.winfo_height())
-                self.logger.info(f"Window resized to {self.window_size}")
         except Exception as e:
-            self.logger.error(f"Error handling window resize: {e}")
+            self.logger.log_error(f"Error handling window resize: {e}", "Window")
 
     def _on_window_move(self):
         try:
             if self.window_position != (self.winfo_x(), self.winfo_y()):
                 self.window_position = (self.winfo_x(), self.winfo_y())
-                self.logger.info(f"Window moved to {self.window_position}")
         except Exception as e:
-            self.logger.error(f"Error handling window move: {e}")
+            self.logger.log_error(f"Error handling window move: {e}", "Window")
 
     def _on_focus_in(self, event):
-        self.logger.info("Window gained focus.")
+        pass
 
     def _on_focus_out(self, event):
-        self.logger.info("Window lost focus.")
+        pass
 
     def _on_window_close(self):
         if self.on_window_close_callback:
             self.on_window_close_callback()
         self.destroy()
-        self.logger.info("Window closed.")
 
     # Utility and Helper Methods
     def get_size(self):

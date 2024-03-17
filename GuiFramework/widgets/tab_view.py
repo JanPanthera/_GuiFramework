@@ -1,4 +1,4 @@
-# tab_view.py
+# GuiFramework/widgets/tab_view.py
 
 from customtkinter import CTkFrame, CTkButton
 
@@ -8,7 +8,7 @@ class TabView(CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.window = master
 
-        self.pack(fill='both', expand=True)
+        self.pack(fill="both", expand=True)
 
         # Vertical expansion weights
         self.rowconfigure(0, weight=0)
@@ -26,7 +26,7 @@ class TabView(CTkFrame):
         self.title_to_btn = {}
 
     def show(self):
-        self.pack(fill='both', expand=True)
+        self.pack(fill="both", expand=True)
 
     def hide(self):
         self.pack_forget()
@@ -39,7 +39,7 @@ class TabView(CTkFrame):
     def remove_tab(self, frame):
         for btn, frm in self.btn_to_frame.items():
             if frm == frame:
-                del self.title_to_btn[btn.cget('text')]
+                del self.title_to_btn[btn.cget("text")]
                 btn.destroy()
                 del self.btn_to_frame[btn]
                 break
@@ -61,6 +61,6 @@ class TabView(CTkFrame):
 
     def _create_tab_button(self, frame, title):
         btn = CTkButton(self.btn_frame, text=title, command=lambda: self.show_tab(frame))
-        btn.pack(side='left', fill='none', expand=False)
+        btn.pack(side="left", fill="none", expand=False)
         self.btn_to_frame[btn] = frame
         self.title_to_btn[title] = btn
