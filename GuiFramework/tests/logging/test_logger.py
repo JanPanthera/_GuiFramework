@@ -50,6 +50,12 @@ class TestLoggerClass:
         local_logger.log_warning("This is a warning message", "test_method2")
         local_logger.log_error("This is an error message", "test_method2")
         local_logger.log_critical("This is a critical message", "test_method2")
+        
+        Logger.slog_error("another_logger", "This is a static error message", "test_method2")
+        Logger.slog_critical("another_logger", "This is a static critical message", "test_method2")
+        
+        Logger.slog_info("another_logger", "This is a static info message", "test_method2")
+        Logger.slog_warning("another_logger", "This is a static warning message", "test_method2")
 
 
 def main():

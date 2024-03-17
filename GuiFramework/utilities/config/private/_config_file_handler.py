@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Union
 
 from GuiFramework.core.constants import FRAMEWORK_NAME
-from GuiFramework.utilities.logging import StaticLoggerMixin
+from GuiFramework.utilities.logging import Logger
 from GuiFramework.utilities.file_ops import FileOps
 
 
@@ -74,12 +74,11 @@ class ConfigData:
                         raise ValueError(f"Invalid option or value for section {section} in default_config")
 
 
-class _ConfigFileHandler(StaticLoggerMixin):
+class _ConfigFileHandler():
     """Manages configuration files."""
     configs: Dict[str, ConfigData] = {}
     lock: threading.RLock = threading.RLock()
-
-    StaticLoggerMixin.set_logger_details(FRAMEWORK_NAME, "_ConfigFileHandler")
+    logger = Logger.get_logger(FRAMEWORK_NAME)
 
     # Methods for the public interface
     @classmethod
@@ -89,7 +88,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
             if not config_name:
                 raise ValueError("config_name must be set")
             if config_name in cls.configs:
-                StaticLoggerMixin.log_warning("_add_config", f"Configuration \"{config_name}\" already exists.")
+                cls.logger.log_warning("_add_config", f"Configuration \"{config_name}\" already exists.", "_ConfigFileHandler")
                 return
             cls.configs[config_name] = ConfigData(file_handler_config=handler_config, default_config=default_config)
             cls._sync_default_config(config_name)
@@ -135,7 +134,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                     cls._repopulate_config(config_data.custom_config_parser, config_data.default_config_parser)
                     cls._save_config_to_file(config_data.custom_config_parser, config_data.file_handler_config.custom_config_path)
             except Exception as e:
-                StaticLoggerMixin.log_error("_sync_custom_config", f"Failed to synchronize custom configuration for \"{config_name}\": {e}")
+                cls.logger.log_error("_sync_custom_config", f"Failed to synchronize custom configuration for \"{config_name}\": {e}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to synchronize custom configuration for \"{config_name}\": {e}")
 
     @classmethod
@@ -151,7 +150,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                         cls._repopulate_config(config_data.default_config_parser, config_data.default_config)
                     cls._save_config_to_file(config_data.default_config_parser, config_data.file_handler_config.default_config_path)
             except Exception as e:
-                StaticLoggerMixin.log_error("_sync_default_config", f"Failed to synchronize default configuration for \"{config_name}\": {e}")
+                cls.logger.log_error("_sync_default_config", f"Failed to synchronize default configuration for \"{config_name}\": {e}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to synchronize default configuration for \"{config_name}\": {e}")
 
     @classmethod
@@ -164,7 +163,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_reset_config", f"Failed to reset config {config_name}: {str(e)}")
+                cls.logger.log_error("_reset_config", f"Failed to reset config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to reset config {config_name}: {str(e)}")
 
     @classmethod
@@ -179,7 +178,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_save_setting", f"Failed to save setting {option} in section {section} for config {config_name}: {str(e)}")
+                cls.logger.log_error("_save_setting", f"Failed to save setting {option} in section {section} for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to save setting {option} in section {section} for config {config_name}: {str(e)}")
 
     @classmethod
@@ -193,7 +192,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_save_settings", f"Failed to save settings for config {config_name}: {str(e)}")
+                cls.logger.log_error("_save_settings", f"Failed to save settings for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to save settings for config {config_name}: {str(e)}")
 
     @classmethod
@@ -209,7 +208,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                     return config_data.default_config_parser.get(section, option)
                 return fallback_value if fallback_value is not None else "NoDefaultValue"
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_get_setting", f"Failed to get setting {option} in section {section} for config {config_name}: {str(e)}")
+                cls.logger.log_error("_get_setting", f"Failed to get setting {option} in section {section} for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to get setting {option} in section {section} for config {config_name}: {str(e)}")
 
     @classmethod
@@ -223,7 +222,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                     for option, fallback_value in options.items():
                         result_section[option] = cls._get_setting(config_name, section, option, fallback_value, force_default)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_get_settings", f"Failed to get settings for config {config_name}: {str(e)}")
+                cls.logger.log_error("_get_settings", f"Failed to get settings for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to get settings for config {config_name}: {str(e)}")
             return result
 
@@ -240,7 +239,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_reset_setting", f"Failed to reset setting {option} in section {section} for config {config_name}: {str(e)}")
+                cls.logger.log_error("_reset_setting", f"Failed to reset setting {option} in section {section} for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to reset setting {option} in section {section} for config {config_name}: {str(e)}")
 
     @classmethod
@@ -254,7 +253,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_reset_settings", f"Failed to reset settings for config {config_name}: {str(e)}")
+                cls.logger.log_error("_reset_settings", f"Failed to reset settings for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to reset settings for config {config_name}: {str(e)}")
 
     @classmethod
@@ -270,7 +269,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
                 if auto_save:
                     cls._save_custom_config_to_file(config_name)
             except configparser.Error as e:
-                StaticLoggerMixin.log_error("_reset_section", f"Failed to reset section {section} for config {config_name}: {str(e)}")
+                cls.logger.log_error("_reset_section", f"Failed to reset section {section} for config {config_name}: {str(e)}", "_ConfigFileHandler")
                 raise ValueError(f"Failed to reset section {section} for config {config_name}: {str(e)}")
 
     # Methods for internal use
@@ -279,7 +278,7 @@ class _ConfigFileHandler(StaticLoggerMixin):
         """Checks if configuration exists; returns config data or None."""
         config_data = cls.configs.get(config_name, None)
         if config_data is None:
-            StaticLoggerMixin.log_error(caller_method_name, f"Config {config_name} does not exist in {cls.configs}.")
+            cls.logger.log_error(caller_method_name, f"Config {config_name} does not exist in {cls.configs}.", "_ConfigFileHandler")
             raise ValueError(f"Config {config_name} does not exist in {cls.configs}.")
         return config_data
 

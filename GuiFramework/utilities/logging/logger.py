@@ -27,6 +27,17 @@ class Logger:
         """Retrieve an existing logger by name."""
         return cls._loggers.get(logger_name, ValueError(f"Logger with name '{logger_name}' not found. Please add it before getting."))
 
+    @classmethod
+    def remove_logger(cls, logger_name: str) -> None:
+        """Remove a logger by name."""
+        if logger_name in cls._loggers:
+            del cls._loggers[logger_name]
+
+    @classmethod
+    def get_loggers(cls) -> dict:
+        """Retrieve all loggers."""
+        return cls._loggers
+
     def rotate_log(self) -> None:
         """Rotate the log file."""
         _LoggerCore._rotate_file(self.config)
@@ -54,3 +65,34 @@ class Logger:
     def log_critical(self, message: str, module_name: Optional[str] = None) -> None:
         """Log a critical message."""
         self.log(message, LOG_LEVEL.CRITICAL, module_name)
+
+    @staticmethod
+    def slog(logger_name: str, message: str, level: LOG_LEVEL, module_name: Optional[str] = None) -> None:
+        """Static method to log a message at a specified level."""
+        logger = Logger.get_logger(logger_name)
+        logger.log(message, level, module_name)
+
+    @staticmethod
+    def slog_debug(logger_name: str, message: str, module_name: Optional[str] = None) -> None:
+        """Static method to log a debug message."""
+        Logger.slog(logger_name, message, LOG_LEVEL.DEBUG, module_name)
+
+    @staticmethod
+    def slog_info(logger_name: str, message: str, module_name: Optional[str] = None) -> None:
+        """Static method to log an info message."""
+        Logger.slog(logger_name, message, LOG_LEVEL.INFO, module_name)
+
+    @staticmethod
+    def slog_warning(logger_name: str, message: str, module_name: Optional[str] = None) -> None:
+        """Static method to log a warning message."""
+        Logger.slog(logger_name, message, LOG_LEVEL.WARNING, module_name)
+
+    @staticmethod
+    def slog_error(logger_name: str, message: str, module_name: Optional[str] = None) -> None:
+        """Static method to log an error message."""
+        Logger.slog(logger_name, message, LOG_LEVEL.ERROR, module_name)
+
+    @staticmethod
+    def slog_critical(logger_name: str, message: str, module_name: Optional[str] = None) -> None:
+        """Static method to log a critical message."""
+        Logger.slog(logger_name, message, LOG_LEVEL.CRITICAL, module_name)

@@ -5,15 +5,14 @@ import threading
 from typing import Any, Optional, Dict, List
 
 from GuiFramework.core.constants import FRAMEWORK_NAME
-from GuiFramework.utilities.logging import StaticLoggerMixin
+from GuiFramework.utilities.logging import Logger
 
 
-class _ConfigDynamicStore(StaticLoggerMixin):
+class _ConfigDynamicStore:
     """Manages dynamic configuration stores."""
     _dynamic_stores: Dict[str, Dict[str, Any]] = {}
     _lock = threading.RLock()
-
-    StaticLoggerMixin.set_logger_details(FRAMEWORK_NAME, "_ConfigDynamicStore")
+    logger = Logger.get_logger(FRAMEWORK_NAME)
 
     @classmethod
     def _add_store(cls, store_name: str) -> None:
@@ -22,7 +21,7 @@ class _ConfigDynamicStore(StaticLoggerMixin):
             if store_name not in cls._dynamic_stores:
                 cls._dynamic_stores[store_name] = {}
             else:
-                cls._log_warning("_add_store", f"Dynamic store '{store_name}' already exists.")
+                cls.logger.log_warning("_add_store", f"Dynamic store '{store_name}' already exists.", "_ConfigDynamicStore")
 
     @classmethod
     def _get_store(cls, store_name: str) -> Optional[Dict[str, Any]]:
@@ -37,7 +36,7 @@ class _ConfigDynamicStore(StaticLoggerMixin):
             if store_name in cls._dynamic_stores:
                 del cls._dynamic_stores[store_name]
             else:
-                cls._log_warning("_delete_store", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_warning("_delete_store", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
 
     @classmethod
     def _add_variable(cls, store_name: str, variable_name: str, value: Any) -> None:
@@ -45,12 +44,12 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_add_variable", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_add_variable", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             if variable_name not in store:
                 store[variable_name] = value
             else:
-                cls._log_warning("_add_variable", f"Variable '{variable_name}' already exists in '{store_name}'.")
+                cls.logger.log_warning("_add_variable", f"Variable '{variable_name}' already exists in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _add_variables(cls, store_name: str, variables: Dict[str, Any]) -> None:
@@ -58,13 +57,13 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_add_variables", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_add_variables", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             for variable_name, value in variables.items():
                 if variable_name not in store:
                     store[variable_name] = value
                 else:
-                    cls._log_warning("_add_variables", f"Variable '{variable_name}' already exists in '{store_name}'.")
+                    cls.logger.log_warning("_add_variables", f"Variable '{variable_name}' already exists in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _set_variable(cls, store_name: str, variable_name: str, value: Any) -> None:
@@ -72,12 +71,12 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_set_variable", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_set_variable", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             if variable_name in store:
                 store[variable_name] = value
             else:
-                cls._log_warning("_set_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.")
+                cls.logger.log_warning("_set_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _set_variables(cls, store_name: str, variables: Dict[str, Any]) -> None:
@@ -85,13 +84,13 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_set_variables", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_set_variables", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             for variable_name, value in variables.items():
                 if variable_name in store:
                     store[variable_name] = value
                 else:
-                    cls._log_warning("_set_variables", f"Variable '{variable_name}' does not exist in '{store_name}'.")
+                    cls.logger.log_warning("_set_variables", f"Variable '{variable_name}' does not exist in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _get_variable(cls, store_name: str, variable_name: str) -> Optional[Any]:
@@ -99,12 +98,12 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_get_variable", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_get_variable", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return None
             if variable_name in store:
                 return store[variable_name]
             else:
-                cls._log_warning("_get_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.")
+                cls.logger.log_warning("_get_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.", "_ConfigDynamicStore")
                 return None
 
     @classmethod
@@ -113,12 +112,12 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_delete_variable", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_delete_variable", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             if variable_name in store:
                 del store[variable_name]
             else:
-                cls._log_warning("_delete_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.")
+                cls.logger.log_warning("_delete_variable", f"Variable '{variable_name}' does not exist in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _delete_variables(cls, store_name: str, variables: List[str]) -> None:
@@ -126,13 +125,13 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_delete_variables", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_delete_variables", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             for variable_name in variables:
                 if variable_name in store:
                     del store[variable_name]
                 else:
-                    cls._log_warning("_delete_variables", f"Variable '{variable_name}' does not exist in '{store_name}'.")
+                    cls.logger.log_warning("_delete_variables", f"Variable '{variable_name}' does not exist in '{store_name}'.", "_ConfigDynamicStore")
 
     @classmethod
     def _clear_dynamic_store(cls, store_name: str) -> None:
@@ -140,7 +139,7 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_clear_dynamic_store", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_clear_dynamic_store", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return
             store.clear()
 
@@ -150,6 +149,6 @@ class _ConfigDynamicStore(StaticLoggerMixin):
         with cls._lock:
             store = cls._dynamic_stores.get(store_name)
             if store is None:
-                cls._log_error("_get_dynamic_store_keys", f"Dynamic store '{store_name}' not found.")
+                cls.logger.log_error("_get_dynamic_store_keys", f"Dynamic store '{store_name}' not found.", "_ConfigDynamicStore")
                 return []
             return list(store.keys())
