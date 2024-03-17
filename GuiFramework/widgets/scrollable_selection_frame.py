@@ -1,16 +1,17 @@
 # GuiFramework/widgets/scrollable_selection_frame.py
 
 import customtkinter as ctk
+from GuiFramework.utilities.logging.logger import Logger
 
 
 class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master, variable=None, values=None, widget_type="checkbox", single_select=False, command=None, font=None, logger=None, **kwargs):
+    def __init__(self, master, variable=None, values=None, widget_type="checkbox", single_select=False, command=None, font=None, **kwargs):
         super().__init__(master, **kwargs)
         self.command = command
         self.custom_font = font
         self.widget_type = widget_type
         self.single_select = single_select
-        self.logger = logger
+        self.logger = Logger.get_logger("GuiFramework")
         self.widgets = {}
         self.states = {}
 
@@ -27,7 +28,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
     # Public Methods
     def add_entry(self, entry):
         if entry in self.states:
-            self._log_warning(f"Attempted to add a duplicate entry: "{entry}"")
+            self._log_warning(f"Attempted to add a duplicate entry: '{entry}'")
             return
         self.states[entry] = False
         self._create_and_place_widget(entry)
@@ -56,7 +57,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
 
     def set_entry_state(self, entry, state):
         if entry not in self.states:
-            self._log_warning(f"Attempted to set state for non-existent entry: "{entry}"")
+            self._log_warning(f"Attempted to set state for non-existent entry: '{entry}'")
             return
         self.states[entry] = state
         self._update_widget_for_entry(entry)
@@ -137,7 +138,7 @@ class ScrollableSelectionFrame(ctk.CTkScrollableFrame):
             if self.command:
                 self.command(entry)
         except Exception as e:
-            self._log_error(f"Error executing command for entry "{entry}": {e}")
+            self._log_error(f"Error executing command for entry '{entry}': {e}")
 
     def _log_warning(self, message):
         if self.logger:

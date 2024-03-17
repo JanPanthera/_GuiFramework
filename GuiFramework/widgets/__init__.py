@@ -8,4 +8,4 @@ from GuiFramework.widgets.custom_console_textbox import CustomConsoleTextbox
 from GuiFramework.widgets.custom_popup_message_box import CustomPopupMessageBox
 from GuiFramework.widgets.scrollable_selection_frame import ScrollableSelectionFrame
 
-from GuiFramework.widgets.tree_view import FileTreeView, DirectoryTreeView
+from GuiFramework.widgets.tree_view import FileTreeView, DictionaryTreeView
