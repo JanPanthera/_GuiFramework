@@ -16,10 +16,10 @@ class Logger:
             self.rotate_log()
 
     @classmethod
-    def add_logger(cls, config: LoggerConfig) -> Optional['Logger']:
+    def add_logger(cls, config: LoggerConfig, rotate_on_add: bool = False) -> Optional['Logger']:
         """Add a new logger configuration."""
         if isinstance(config, LoggerConfig) and config.logger_name not in cls._loggers:
-            cls._loggers[config.logger_name] = Logger(config)
+            cls._loggers[config.logger_name] = Logger(config, rotate_on_add)
             return cls._loggers[config.logger_name]
 
     @classmethod

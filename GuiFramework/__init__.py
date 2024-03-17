@@ -6,12 +6,13 @@ from GuiFramework.gui import *
 from GuiFramework.widgets import *
 from GuiFramework.utilities import *
 
-
-config = LoggerConfig(
-    log_name="GuiFramework",
-    log_directory=FileOps.resolve_development_path(__file__, "logs", ".root"),
-    log_level=LOG_LEVEL.DEBUG,
-    enabled=True,
+Logger.add_logger(
+    LoggerConfig(
+        logger_name="GuiFramework",
+        log_name="gui_framework",
+        log_directory=FileOps.resolve_development_path(__file__, "logs", ".root"),
+        log_level=LOG_LEVEL.DEBUG,  # Change this to LOG_LEVEL.INFO for production
+        module_name="GuiFramework"
+    ),
+    rotate_on_add=True
 )
-Logger.add_config(logger_name="GuiFramework", config=config)
-Logger.rotate_file(logger_name="GuiFramework")
