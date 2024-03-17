@@ -1,65 +1,32 @@
 # GuiFramework/utilities/utils.py
 
-import time
 import ctypes
-import logging
 
-from GuiFramework.utilities.logger import CustomLogger, LOG_LEVEL
-
-
-DEBOUNCE_DELAY = 100
+from threading import Timer
+from GuiFramework.utilities.logging import Logger
 
 
-def setup_default_logger(log_name="default_logger", log_directory="logs"):
-    """Setup the default logger."""
-    return CustomLogger(
-        log_name=log_name if log_name.endswith(".log") else f"{log_name}.log",
-        log_path=log_directory,
-        textbox=None,
-        log_level=LOG_LEVEL.DEBUG,
-        max_log_size=10 << 20,
-        backup_count=1,
-        rotate_on_start=True,
-        append_datetime_to_rolled_files=True
-    )
+class Utils:
 
+    @staticmethod
+    def get_dpi_scaling_factor():
+        """Get the DPI scaling factor for the current system."""
+        logger = Logger.get_logger("GuiFramework")
+        if not hasattr(ctypes, "windll"):
+            logger.log_warning("get_dpi_scaling_factor is designed to run on Windows.", "Utils")
+            return 1.0
 
-def get_dpi_scaling_factor(logger=None):
-    """Get the DPI scaling factor for the current system."""
-    logger = logger or setup_default_logger()
-    scaling_factor = 1.0
+        try:
+            awareness = ctypes.c_int()
+            error_code = ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
 
-    if not hasattr(ctypes, "windll"):
-        logger.warning("get_dpi_scaling_factor is designed to run on Windows.")
-        return scaling_factor
+            if error_code == 0:
+                dpi = ctypes.windll.user32.GetDpiForSystem()
+                return dpi / 96.0
+        except (AttributeError, OSError) as e:
+            logger.error(f"Failed to query DPI settings: {type(e).__name__}: {e}. Using default scaling factor.", "Utils")
 
-    try:
-        awareness = ctypes.c_int()
-        error_code = ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
-
-        if error_code == 0:
-            dpi = ctypes.windll.user32.GetDpiForSystem()
-            scaling_factor = dpi / 96.0
-    except (AttributeError, OSError) as e:
-        logger.error(f"Failed to query DPI settings: {type(e).__name__}: {e}. Using default scaling factor.")
-
-    return scaling_factor
-
-
-def handle_error(logger, message):
-    """Handle error messages."""
-    if logger is not None:
-        logger.error(message)
-    else:
-        print(message)
-
-
-def handle_warning(logger, message):
-    """Handle warning messages."""
-    if logger is not None:
-        logger.warning(message)
-    else:
-        print(message)
+        return 1.0
 
 
 class Debouncer:
@@ -69,7 +36,7 @@ class Debouncer:
         """Initialize Debouncer with a delay."""
         self.delay = delay
         self.callback = None
-        self.next_call_time = 0
+        self.timer = None
 
     def __call__(self, callback):
         """Call the debounced function."""
@@ -78,11 +45,19 @@ class Debouncer:
 
     def _debounced(self, *args, **kwargs):
         """Debounce the function call."""
-        current_time = time.time()
-        if current_time >= self.next_call_time:
-            self.next_call_time = current_time + self.delay
+        if self.timer is not None:
+            self.timer.cancel()
+        self.timer = Timer(self.delay, self._debounced_callback, args=args, kwargs=kwargs)
+        self.timer.start()
+
+    def _debounced_callback(self, *args, **kwargs):
+        """The debounced function call."""
+        if self.callback is not None:
             self.callback(*args, **kwargs)
+        self.timer = None
 
     def cancel(self):
         """Cancel the debounce delay."""
-        self.next_call_time = 0
+        if self.timer is not None:
+            self.timer.cancel()
+            self.timer = None

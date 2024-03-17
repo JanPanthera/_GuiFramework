@@ -6,15 +6,13 @@ import subprocess
 import threading
 
 from pathlib import Path
-from GuiFramework.utilities.utils import setup_default_logger
+from GuiFramework.utilities.logging import Logger
 
 
 class ExecutableCreator:
-    """Class for creating executable files."""
-
-    def __init__(self, main_script_path, exe_name, dist_path, work_path, no_console=False, additional_flags=None, logger=None):
+    def __init__(self, main_script_path, exe_name, dist_path, work_path, no_console=False, additional_flags=None):
         """Initialize ExecutableCreator with script, paths, and flags."""
-        self.logger = logger or setup_default_logger(log_name="ExecutableCreator", log_directory="logs/GuiFramework")
+        self.logger = Logger.get_logger("GuiFramework")
         self.main_script_path = Path(main_script_path)
         self.exe_name = exe_name
         self.dist_path = Path(dist_path)
@@ -76,15 +74,15 @@ class ExecutableCreator:
             return_code = process.wait()
 
             if return_code != 0:
-                self.logger.error("Error occurred while creating the executable.")
+                self.logger.log_error("Error occurred while creating the executable.", "ExecutableCreator")
             else:
                 self._clean_up_temporary_files()
                 self._validate_output_executable()
 
         except FileNotFoundError as e:
-            self.logger.error(f"File not found: {e}")
+            self.logger.log_error(f"File not found: {e}", "ExecutableCreator")
         except Exception as e:
-            self.logger.error(f"An unexpected error occurred: {e}")
+            self.logger.log_error(f"An unexpected error occurred: {e}", "ExecutableCreator")
 
     def _clean_up_temporary_files(self):
         """Clean up temporary files after creating the executable."""
@@ -96,7 +94,7 @@ class ExecutableCreator:
             raise FileNotFoundError(f"Main script not found: {self.main_script_path}")
 
         if not shutil.which("pyinstaller"):
-            raise EnvironmentError("PyInstaller is not installed or not in the system"s PATH.")
+            raise EnvironmentError("PyInstaller is not installed or not in the system's PATH.")
 
     def _validate_output_executable(self):
         """Validate the output executable file."""

@@ -1,20 +1,20 @@
-# GuiFramework/utilities/helper_ctk.py
+# GuiFramework/utilities/ctk_helper.py
 
 import customtkinter as ctk
 
+from GuiFramework.utilities.logging import Logger
 from GuiFramework.utilities.file_ops import FileOps
-from GuiFramework.utilities.utils import setup_default_logger
 
 
 class CtkHelper:
-    logger = setup_default_logger(log_name="CtkHelper", log_directory="logs/GuiFramework")
+    logger = Logger.get_logger("GuiFramework")
 
     @staticmethod
     def load_file_to_textbox(textbox, file_path, overwrite=False, append=False, encoding="utf-8"):
         """Load content from a file to a textbox widget."""
         try:
             if not FileOps.file_exists(file_path):
-                CtkHelper.logger.error(f"File not found: {file_path}")
+                CtkHelper.logger.log_error(f"File not found: {file_path}", "CtkHelper")
                 return
 
             content = FileOps.load_file(file_path, encoding)
@@ -26,7 +26,7 @@ class CtkHelper:
                 else:
                     textbox.insert("1.0", content)
         except Exception as e:
-            CtkHelper.logger.error(f"Error while loading file {file_path}: {e}")
+            CtkHelper.logger.log_error(f"Error while loading file {file_path}: {e}", "CtkHelper")
 
     @staticmethod
     def save_textbox_to_file(textbox, file_path, overwrite=False, append=False, encoding="utf-8"):
@@ -36,7 +36,7 @@ class CtkHelper:
             if content:
                 FileOps.write_file(file_path, content, overwrite, append, encoding)
         except Exception as e:
-            CtkHelper.logger.error(f"Error while saving file {file_path}: {e}")
+            CtkHelper.logger.log_error(f"Error while saving file {file_path}: {e}", "CtkHelper")
 
     @staticmethod
     def update_widget_text(widget, text):
@@ -44,5 +44,5 @@ class CtkHelper:
         if isinstance(widget, widget_types):
             widget.configure(text=text)
         else:
-            # CtkHelper.logger.warning(f"Unsupported widget type: {type(widget).__name__}")
-            pass
+            CtkHelper.logger.log_warning(f"Unsupported widget type: {type(widget).__name__}", "CtkHelper")
+

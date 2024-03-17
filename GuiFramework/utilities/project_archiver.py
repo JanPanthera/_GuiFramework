@@ -4,6 +4,8 @@ import os
 import shutil
 import zipfile
 
+from GuiFramework.utilities.logging import Logger
+
 
 class CopyType:
     ROOT_FOLDER = 1
@@ -13,14 +15,13 @@ class CopyType:
 
 
 class ProjectArchiver:
-    """Class for archiving project files and folders."""
-
     def __init__(self, files_folders, zip_name, temp_folder, output_dir):
         """Initialize ProjectArchiver with files, folders, and paths."""
         self.files_folders = files_folders
         self.zip_name = zip_name
         self.temp_folder = temp_folder
         self.output_dir = output_dir
+        self.logger = Logger.get_logger("GuiFramework")
 
     def move_files_to_temp_folder(self):
         """Move files and folders to a temporary folder."""

@@ -3,12 +3,11 @@
 import threading
 
 from collections import defaultdict
-from GuiFramework.utilities.utils import setup_default_logger
+from GuiFramework.utilities.logging import Logger
 
 
 class EventManager:
-    """A class for managing events and their subscribers."""
-    logger = setup_default_logger(log_name="EventManager", log_directory="logs/GuiFramework")
+    logger = Logger.get_logger("GuiFramework")
     subscribers = defaultdict(set)
     lock = threading.RLock()
 
@@ -16,7 +15,7 @@ class EventManager:
     def subscribe(cls, event_type, callback):
         """Subscribes a callback to an event type."""
         if not callable(callback):
-            cls.logger.error("Callback is not callable: %s", callback)
+            cls.logger.log_error(f"Callback is not callable: {callback}", "EventManager")
             return
         with cls.lock:
             cls.subscribers[event_type].add(callback)
@@ -37,6 +36,6 @@ class EventManager:
             callbacks = list(callbacks)
         for callback in callbacks:
             try:
-                callback(*args, **kwargs)
+                callback(event_type, *args, **kwargs)
             except Exception as e:
-                cls.logger.error("Error notifying subscriber: %s", e)
+                cls.logger.log_error(f"Error notifying subscriber: {e}", "EventManager")

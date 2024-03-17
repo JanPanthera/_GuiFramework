@@ -9,7 +9,8 @@ from pathlib import Path
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
-from GuiFramework.utilities import EventManager, BiMap, setup_default_logger
+from GuiFramework.utilities.logging import Logger
+from GuiFramework.utilities import EventManager, BiMap
 
 
 class LocalizationManager:
@@ -17,14 +18,14 @@ class LocalizationManager:
     DEFAULT_FALLBACK_LANGUAGE = "en"
     DEFAULT_LANGUAGE = "en"
 
-    def __init__(self, locales_dir=None, active_language=None, fallback_language=None, lazy_load=True, logger=None):
-        self.logger = logger or setup_default_logger(log_name="LocalizationManager", log_directory="logs/GuiFramework")
+    def __init__(self, locales_dir=None, active_language=None, fallback_language=None, lazy_load=True):
+        self.logger = Logger.get_logger("GuiFramework")
         self.lock = threading.RLock()
         self.observers = {"before_subs_notify": [], "lang_update": [], "after_subs_notify": []}
         self.locale_dir = Path(locales_dir) or Path(self.DEFAULT_LOCALES_DIR)
         if not self.locale_dir.exists() or not self.locale_dir.is_dir():
             self.locale_dir.mkdir(parents=True, exist_ok=True)
-            self.logger.warning(f"Locales directory not found, creating: {self.locale_dir}")
+            self.logger.log_warning(f"Locales directory not found, creating: {self.locale_dir}", "LocalizationManager")
         self.language_map = self._map_languages()
         self.lazy_load = lazy_load
 
@@ -66,7 +67,7 @@ class LocalizationManager:
                 elif language_type == "fallback":
                     self.fallback_language = normalized_language_code
 
-                self.logger.info(f"{language_type.capitalize()} language set to: {normalized_language_code}")
+                self.logger.log_info(f"{language_type.capitalize()} language set to: {normalized_language_code}", "LocalizationManager")
 
                 if language_type == "active":
                     self._notify_observers(normalized_language_code, "before_subs_notify")
@@ -74,14 +75,14 @@ class LocalizationManager:
                     self._notify_observers(normalized_language_code, "after_subs_notify")
 
             except KeyError as e:
-                self.logger.warning(f"{e} Falling back to default {language_type} language.")
+                self.logger.log_warning(f"{e} Falling back to default {language_type} language.", "LocalizationManager")
                 if language_type == "active":
                     self.active_language = self.DEFAULT_LANGUAGE
                 elif language_type == "fallback":
                     self.fallback_language = self.DEFAULT_FALLBACK_LANGUAGE
 
             except (FileNotFoundError, IOError) as e:
-                self.logger.error(f"Error loading {language_type} language dictionary for '{language_code}': {e}")
+                self.logger.log_error(f"Error loading {language_type} language dictionary for '{language_code}': {e}", "LocalizationManager")
                 if language_type == "active":
                     self.active_language = self.DEFAULT_LANGUAGE
                 elif language_type == "fallback":
@@ -100,7 +101,7 @@ class LocalizationManager:
         if not key or not isinstance(key, str):
             if key == "":
                 return key
-            self.logger.warning("Localization key is empty")
+            self.logger.log_warning("Localization key is empty", "LocalizationManager")
             return "key_error"
 
         def translate(lookup_key, languages):
@@ -155,7 +156,7 @@ class LocalizationManager:
         try:
             translation = template.format(*args)
         except IndexError as e:
-            self.logger.error(f"Error formatting translation: {e}")
+            self.logger.log_error(f"Error formatting translation: {e}", "LocalizationManager")
             translation = template
         return translation
 
@@ -178,7 +179,7 @@ class LocalizationManager:
         """Unsubscribes an observer from language updates."""
         with self.lock:
             self.observers.remove(observer)
-            self.logger.info(f"Unsubscribed observer: {observer}")
+            self.logger.log_info(f"Unsubscribed observer: {observer}", "LocalizationManager")
 
     def _notify_observers(self, language_code, event_type):
         """
@@ -196,7 +197,7 @@ class LocalizationManager:
                 raise ValueError(f"Invalid locale code in file name: {file_path}")
             return code.lower(), code
         except (IndexError, ValueError) as e:
-            self.logger.warning(f"Skipping invalid dictionary file '{file_path}': {e}")
+            self.logger.log_warning(f"Skipping invalid dictionary file '{file_path}': {e}", "LocalizationManager")
             return None
 
     def _map_languages(self):
@@ -210,7 +211,7 @@ class LocalizationManager:
                 english_name = locale_obj.get_display_name('en').lower()
                 mapping[english_name] = locale_code
         if not mapping:
-            self.logger.error("No valid language dictionaries found. Please check the locales directory.")
+            self.logger.log_error("No valid language dictionaries found. Please check the locales directory.", "LocalizationManager")
         return mapping
 
     def _load_all_languages(self):
@@ -229,4 +230,4 @@ class LocalizationManager:
                         for k, v in translations.items():
                             self.dictionaries[language_code][k] = v
             except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                self.logger.error(f"Failed to load language dictionary '{language_code}': {e}")
+                self.logger.log_error(f"Failed to load language dictionary '{language_code}': {e}", "LocalizationManager")
