@@ -2,13 +2,12 @@
 
 from customtkinter import CTkEntry
 from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
-from GuiFramework.utilities import setup_default_logger
+from GuiFramework.utilities.logging import Logger
 
 
 class CtkEntryBuilder(AbstractCtkBuilder):
-    def __init__(self, config_manager=None, localize_func=None, logger=None):
-        super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger(log_name="CtkEntryBuilder", log_directory="logs/GuiFramework")
+    def __init__(self, config_manager=None, localize_func=None):
+        super().__init__(config_manager, localize_func)
 
     @property
     def widget_type(self):
@@ -25,8 +24,9 @@ class CtkEntryBuilder(AbstractCtkBuilder):
                     widget_properties[property_name] = handler(widget_properties[property_name], instance)
 
             widget = CTkEntry(master, **widget_properties)
-            self.logger.debug(f"CTkEntry created with properties: {widget_properties}")
+            self.logger.log_debug(f"CTkEntry created with properties: {widget_properties}", "CtkEntryBuilder")
             return widget
         except Exception as e:
-            self.logger.error(f"Error creating CTkEntry: {e}")
+            self.logger.log_error(f"Error creating CTkEntry: {e}", "CtkEntryBuilder")
             return None
+

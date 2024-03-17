@@ -2,13 +2,12 @@
 
 from GuiFramework.widgets import scrollable_selection_frame as ssf
 from GuiFramework.gui.gui_manager.widget_builder.abstract_ctk_builder import AbstractCtkBuilder
-from GuiFramework.utilities import setup_default_logger
+from GuiFramework.utilities.logging import Logger
 
 
 class ScrollableSelectionFrameBuilder(AbstractCtkBuilder):
-    def __init__(self, config_manager=None, localize_func=None, logger=None):
-        super().__init__(config_manager, localize_func, logger)
-        self.logger = logger or setup_default_logger(log_name="ScrollableSelectionFrameBuilder", log_directory="logs/GuiFramework")
+    def __init__(self, config_manager=None, localize_func=None):
+        super().__init__(config_manager, localize_func)
 
     @property
     def widget_type(self):
@@ -25,8 +24,7 @@ class ScrollableSelectionFrameBuilder(AbstractCtkBuilder):
                     widget_properties[property_name] = handler(widget_properties[property_name], instance)
 
             widget = ssf.ScrollableSelectionFrame(master, **widget_properties)
-            self.logger.debug(f"ScrollableSelectionFrame created with properties: {widget_properties}")
+            self.logger.log_debug(f"ScrollableSelectionFrame created with properties: {widget_properties}", "ScrollableSelectionFrameBuilder")
             return widget
         except Exception as e:
-            self.logger.error(f"Error creating ScrollableSelectionFrame: {e}")
-            return None
+            self.logger.log_error(f"Error creating ScrollableSelectionFrame: {e}", "ScrollableSelectionFrameBuilder")

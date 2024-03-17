@@ -3,13 +3,13 @@
 import customtkinter as ctk
 
 from GuiFramework.gui.gui_manager.widget_builder.abstract_builder import AbstractBuilder
-from GuiFramework.utilities import setup_default_logger
+from GuiFramework.utilities.logging import Logger
 
 
 class AbstractCtkBuilder(AbstractBuilder):
-    def __init__(self, config_manager=None, localize_func=None, logger=None):
+    def __init__(self, config_manager=None, localize_func=None):
+        self.logger = Logger.get_logger("GuiFramework")
         super().__init__()
-        self.logger = logger or setup_default_logger(log_name="AbstractCtkBuilder", log_directory="logs/GuiFramework")
         self.config_manager = config_manager
         self.loc = localize_func
         self.property_handlers = {
@@ -25,10 +25,10 @@ class AbstractCtkBuilder(AbstractBuilder):
         try:
             if callable(self.loc):
                 value = self.loc(value)
-                self.logger.debug(f"Translated text: {value}")
+                self.logger.log_debug(f"Translated text: {value}", "AbstractCtkBuilder")
             return value
         except Exception as e:
-            self.logger.error(f"Error handling text property: {e}")
+            self.logger.log_error(f"Error handling text property: {e}", "AbstractCtkBuilder")
             return value
 
     def handle_font_property(self, value, instance):
@@ -60,14 +60,14 @@ class AbstractCtkBuilder(AbstractBuilder):
             try:
                 text_variable = ctk.StringVar(value=str(text_variable))
             except Exception as e:
-                self.logger.error(f"Error handling text_variable property: {e}")
+                self.logger.log_error(f"Error handling text_variable property: {e}", "AbstractCtkBuilder")
                 text_variable = None
         return text_variable
 
     def handle_command_property(self, command, instance):
         _command = self._handle_property(command, instance)
         if _command is not None and not callable(_command):
-            self.logger.warning(f"Command property {command} is not callable.")
+            self.logger.log_warning(f"Command property {command} is not callable.", "AbstractCtkBuilder")
             _command = None
         return _command
 
@@ -81,10 +81,10 @@ class AbstractCtkBuilder(AbstractBuilder):
             if _property is None and self.config_manager:
                 _property = self.config_manager.get_variable(property_name)
             if _property is None:
-                self.logger.warning(f"{property_name.capitalize()} property not found.")
+                self.logger.log_warning(f"{property_name.capitalize()} property not found.", "AbstractCtkBuilder")
             return _property
         except Exception as e:
-            self.logger.error(f"Error handling {property_name} property: {e}")
+            self.logger.log_error(f"Error handling {property_name} property: {e}", "AbstractCtkBuilder")
             return None
 
     def apply_packing(self, widget, packing_properties):
@@ -95,7 +95,7 @@ class AbstractCtkBuilder(AbstractBuilder):
             packing_type = packing_properties.pop("packing_type", "pack")
             getattr(widget, packing_type)(**packing_properties)
         except Exception as e:
-            self.logger.error(f"Error applying packing properties: {e}")
+            self.logger.log_error(f"Error applying packing properties: {e}", "AbstractCtkBuilder")
 
     def apply_grid_configuration(self, widget, grid_configuration):
         for row, config in grid_configuration.get("rows", {}).items():
