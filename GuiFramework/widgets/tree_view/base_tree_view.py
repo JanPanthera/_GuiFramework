@@ -3,7 +3,7 @@
 import customtkinter as ctk
 
 from abc import abstractmethod
-from GuiFramework.utilities import EventManager, setup_default_logger
+from GuiFramework.utilities import EventManager
 
 
 class BaseNode:
@@ -161,8 +161,7 @@ class BaseFolderNode(BaseNode):
 
 
 class BaseTreeView(ctk.CTkScrollableFrame):
-    def __init__(self, parent, multi_select=False, logger=None, *args, **kwargs):
-        self.logger = logger or setup_default_logger(log_name="BaseTreeView", log_directory="logs/GuiFramework")
+    def __init__(self, parent, multi_select=False, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         EventManager.subscribe("deselect_all_files", self.deselect_all)
         self.multi_select = multi_select
@@ -183,25 +182,25 @@ class BaseTreeView(ctk.CTkScrollableFrame):
             self.root_node.folder_node_container.destroy()
             self.root_node = None
         else:
-            self.logger.warning("Root Node must be set before destroying the tree.")
+            raise ValueError("Root Node must be set before destroying the tree.")
 
     def expand_all(self):
         if self.root_node:
             self._expand_all(self.root_node)
         else:
-            self.logger.warning("Root Node must be set before expanding all nodes.")
+            raise ValueError("Root Node must be set before expanding all nodes.")
 
     def collapse_all(self):
         if self.root_node:
             self._collapse_all(self.root_node)
         else:
-            self.logger.warning("Root Node must be set before collapsing all nodes.")
+            raise ValueError("Root Node must be set before collapsing all nodes.")
 
     def select_all(self):
         if self.root_node:
             self._select_all(self.root_node)
         else:
-            self.logger.warning("Root Node must be set before selecting all nodes.")
+            raise ValueError("Root Node must be set before selecting all nodes.")
 
     def deselect_all(self, **kwargs):
         if kwargs.get("single_select", False) and self.multi_select:
@@ -209,7 +208,7 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         if self.root_node:
             self._deselect_all(self.root_node)
         else:
-            self.logger.warning("Root Node must be set before deselecting all nodes.")
+            raise ValueError("Root Node must be set before deselecting all nodes.")
 
     def get_selected_files(self):
         if self.root_node:
@@ -217,8 +216,7 @@ class BaseTreeView(ctk.CTkScrollableFrame):
             self._get_selected_files(self.root_node, selected_files)
             return selected_files
         else:
-            self.logger.warning("Root Node must be set before getting selected files.")
-            return {}
+            raise ValueError("Root Node must be set before getting selected files.")
 
     # Private methods
     def _expand_all(self, node):

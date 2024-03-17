@@ -51,12 +51,10 @@ class FileTreeView(BaseTreeView):
     def create_tree(self, root=None, expand_root_node=False):
         self.root = root or self.root
         if not self.root:
-            self.logger.warning("Root path must be set or provided before creating the tree.")
-            return
+            raise ValueError("Root path must be set or provided before creating the tree.")
 
         if self.root_node:
-            self.logger.warning("Tree already exists. Use recreate_tree() to recreate the tree.")
-            return
+            raise ValueError("Tree already exists. Use recreate_tree() to recreate the tree.")
 
         self.root_node = FolderNode(self, self.root)
         self.root_node.show()
