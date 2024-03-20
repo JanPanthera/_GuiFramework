@@ -145,7 +145,7 @@ class _ConfigHandler:
                     value = cls._get_setting(config_key=config_key)
                     variable.set_value(value)
                 elif config_key.save_to_file:
-                    cls._save_setting(config_key=config_key, value=variable.value)
+                    cls._save_setting(config_key=config_key, value=variable._value)
 
     @classmethod
     def _add_variables(cls, variables: List[Union[ConfigVariable, Tuple[ConfigVariable, bool]]]) -> None:
@@ -175,7 +175,7 @@ class _ConfigHandler:
     def _get_variable_value(cls, config_key: ConfigKey) -> Any:
         """Retrieves the value of a single variable from the configuration."""
         with cls._lock:
-            return cls._config_variables._get_variable(config_key).value
+            return cls._config_variables._get_variable(config_key)._value
 
     @classmethod
     def _get_variable_values(cls, config_keys: List[ConfigKey]) -> List[Any]:
@@ -189,7 +189,7 @@ class _ConfigHandler:
         with cls._lock:
             cls._config_variables._set_variable(updated_variable)
             if updated_variable.config_key.save_to_file and updated_variable.config_key.auto_save:
-                cls._save_setting(config_key=updated_variable.config_key, value=updated_variable.value)
+                cls._save_setting(config_key=updated_variable.config_key, value=updated_variable._value)
 
     @classmethod
     def _set_variables(cls, updated_variables: List[ConfigVariable]) -> None:
@@ -198,7 +198,7 @@ class _ConfigHandler:
             cls._config_variables._set_variables(updated_variables)
             for variable in updated_variables:
                 if variable._config_key.save_to_file and variable._config_key.auto_save:
-                    cls._save_setting(config_key=variable._config_key, value=variable.value)
+                    cls._save_setting(config_key=variable._config_key, value=variable._value)
 
     @classmethod
     def _set_variable_value(cls, config_key: ConfigKey, new_value: Any) -> None:
