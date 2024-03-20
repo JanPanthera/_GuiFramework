@@ -63,7 +63,7 @@ class Window(ctk.CTk):
         self.window_position = self.configs[WindowSettings.WINDOW_POSITION]
         self.window_size_before_fullscreen = self.window_size
         self.window_position_before_fullscreen = self.window_position
-        self.high_dpi_scale = Utils.Utils.get_dpi_scaling_factor()
+        self.high_dpi_scale = Utils.get_dpi_scaling_factor()
         self.resize_debouncer = Debouncer(delay=0.1)
         self.move_debouncer = Debouncer(delay=0.1)
         self._on_window_resize_debounced = self.resize_debouncer(self._on_window_resize)
