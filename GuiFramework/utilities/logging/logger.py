@@ -11,8 +11,8 @@ class Logger:
     def __init__(self, config: LoggerConfig, rotate_on_init: bool = False) -> None:
         """Initialize or retrieve a logger."""
         self.config: LoggerConfig = config or LoggerConfig()
-        if self.config.logger_name not in self._loggers:
-            self._loggers[self.config.logger_name] = self
+        if self.config.logger_name not in Logger._loggers:
+            Logger._loggers[self.config.logger_name] = self
         if rotate_on_init:
             self.rotate_log()
 
