@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Optional, List, Type, Union, Tuple
 
-from .private._config_handler import _ConfigHandler, ConfigFileHandlerConfig, CustomTypeHandlerBase, ConfigVariable
+from .internal._config_handler import _ConfigHandler, ConfigFileHandlerConfig, CustomTypeHandlerBase, ConfigVariable
 
 
 class ConfigHandler:
@@ -109,6 +109,11 @@ class ConfigHandler:
         _ConfigHandler._set_variables(config_name, updated_variables)
 
     @staticmethod
+    def set_variable_value(config_name: str, variable_name: str, new_value: Any, section: Optional[str] = None) -> None:
+        """Set the value of a variable."""
+        _ConfigHandler._set_variable_value(config_name, variable_name, new_value, section)
+
+    @staticmethod
     def get_variable(config_name: str, variable_name: str, section: Optional[str] = None) -> Optional[ConfigVariable]:
         """Retrieve the value of a variable."""
         return _ConfigHandler._get_variable(config_name, variable_name, section)
@@ -117,6 +122,11 @@ class ConfigHandler:
     def get_variables(config_name: str, variables: List[Union[str, Tuple[str, str]]]) -> Dict[str, Dict[str, Optional[ConfigVariable]]]:
         """Retrieve all variables."""
         return _ConfigHandler._get_variables(config_name, variables)
+    
+    @staticmethod
+    def get_variable_value(config_name: str, variable_name: str, section: Optional[str] = None) -> Any:
+        """Retrieve the value of a variable."""
+        return _ConfigHandler._get_variable_value(config_name, variable_name, section)
 
     @staticmethod
     def delete_variable(config_name: str, variable_name: str, section: Optional[str] = None) -> None:

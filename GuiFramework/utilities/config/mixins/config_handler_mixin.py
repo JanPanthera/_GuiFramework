@@ -75,21 +75,25 @@ class ConfigHandlerMixin:
         """Reset an entire section to its default values."""
         ConfigHandler.reset_section(self.config_name, settings, auto_save)
 
-    def add_variable(self, variable: ConfigVariable, auto_save: bool = True) -> None:
+    def add_variable(self, variable: ConfigVariable) -> None:
         """Add a variable to the dynamic store."""
-        ConfigHandler.add_variable(self.config_name, variable, auto_save)
+        ConfigHandler.add_variable(self.config_name, variable)
 
-    def add_variables(self, variables: List[ConfigVariable], auto_save: bool = True) -> None:
+    def add_variables(self, variables: List[ConfigVariable]) -> None:
         """Add multiple variables to the dynamic store."""
-        ConfigHandler.add_variables(self.config_name, variables, auto_save)
+        ConfigHandler.add_variables(self.config_name, variables)
 
-    def set_variable(self, updated_variable: ConfigVariable, auto_save: bool = True) -> None:
+    def set_variable(self, updated_variable: ConfigVariable) -> None:
         """Set the value of a variable."""
-        ConfigHandler.set_variable(self.config_name, updated_variable, auto_save)
+        ConfigHandler.set_variable(self.config_name, updated_variable)
 
-    def set_variables(self, updated_variables: List[ConfigVariable], auto_save: bool = True) -> None:
+    def set_variables(self, updated_variables: List[ConfigVariable]) -> None:
         """Set multiple variables."""
-        ConfigHandler.set_variables(self.config_name, updated_variables, auto_save)
+        ConfigHandler.set_variables(self.config_name, updated_variables) 
+
+    def set_variable_value(self, variable_name: str, new_value: Any, section: Optional[str] = None) -> None:
+        """Set the value of a variable."""
+        ConfigHandler.set_variable_value(self.config_name, variable_name, new_value, section)
 
     def get_variable(self, variable_name: str, section: Optional[str] = None) -> Optional[ConfigVariable]:
         """Retrieve the value of a variable."""
@@ -98,6 +102,10 @@ class ConfigHandlerMixin:
     def get_variables(self, variables: List[Union[str, Tuple[str, str]]]) -> Dict[str, Dict[str, Optional[ConfigVariable]]]:
         """Retrieve all variables."""
         return ConfigHandler.get_variables(self.config_name, variables)
+    
+    def get_variable_value(self, variable_name: str, section: Optional[str] = None) -> Any:
+        """Retrieve the value of a variable."""
+        return ConfigHandler.get_variable_value(self.config_name, variable_name, section)
 
     def delete_variable(self, variable_name: str, section: Optional[str] = None) -> None:
         """Delete a variable."""

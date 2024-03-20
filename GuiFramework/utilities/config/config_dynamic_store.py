@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from .private._config_dynamic_store import _ConfigDynamicStore
+from .internal._config_dynamic_store import _ConfigDynamicStore
 
 
 class ConfigDynamicStore:

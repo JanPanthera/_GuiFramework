@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional
 
-from .private._config_file_handler import _ConfigFileHandler, ConfigFileHandlerConfig
+from .internal._config_file_handler import _ConfigFileHandler, ConfigFileHandlerConfig
 
 
 class ConfigFileHandler:
