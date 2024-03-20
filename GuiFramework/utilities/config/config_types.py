@@ -15,6 +15,29 @@ from GuiFramework.mixins.event_mixin import EventMixin
 BASIC_TYPES = (str, int, float, bool)
 
 
+class ConfigKeyList:
+    @classmethod
+    def add_ConfigKey(cls, name, section="Default", type_=None, save_to_file=True, auto_save=True, config_name="Default"):
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        if hasattr(cls, name.upper()):
+            raise AttributeError(f"Attribute '{name.upper()}' already exists. ConfigKeyList.add_ConfigKey({name}, ...)")
+        config_key = ConfigKey(name, section, type_, save_to_file, auto_save, config_name)
+        setattr(cls, name.upper(), config_key)
+
+    @classmethod
+    def get_ConfigKey(cls, name):
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        if not hasattr(cls, name.upper()):
+            raise AttributeError(f"Attribute '{name.upper()}' does not exist.")
+        return getattr(cls, name.upper())
+
+    @classmethod
+    def get_ConfigKeys(cls):
+        return [getattr(cls, attr) for attr in dir(cls) if isinstance(getattr(cls, attr), ConfigKey)]
+
+
 @dataclass(frozen=True)
 class ConfigKey:
     """Represents a configuration key."""

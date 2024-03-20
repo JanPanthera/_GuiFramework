@@ -131,6 +131,7 @@ class _ConfigHandler:
         _ConfigFileHandler._reset_section(config_name, section, auto_save)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     @classmethod
     def _add_variable(cls, config_key: ConfigKey, value: Any, default_value: Any, init_from_file: bool = False) -> None:
         """Adds a single variable to the configuration, optionally initializing it from file."""
