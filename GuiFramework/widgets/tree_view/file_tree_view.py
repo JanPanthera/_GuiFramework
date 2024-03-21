@@ -46,7 +46,7 @@ class FileTreeView(BaseTreeView):
         super().__init__(parent, *args, **kwargs)
         self.root = root
         if self.root:
-            self.create_tree(expand_root_node)
+            self.create_tree(root, expand_root_node)
 
     def create_tree(self, root=None, expand_root_node=False):
         self.root = root or self.root
