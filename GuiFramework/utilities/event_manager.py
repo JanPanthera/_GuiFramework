@@ -3,39 +3,32 @@
 import threading
 
 from collections import defaultdict
-from GuiFramework.utilities.logging import Logger
+from typing import Callable, Dict, Set
 
 
 class EventManager:
-    logger = Logger.get_logger("GuiFramework")
-    subscribers = defaultdict(set)
-    lock = threading.RLock()
+    """Event manager for subscribing to and notifying events."""
+    _subscribers: Dict[str, Set[Callable]] = defaultdict(set)
+    _lock = threading.RLock()
 
     @classmethod
-    def subscribe(cls, event_type, callback):
-        """Subscribes a callback to an event type."""
+    def subscribe(cls, event_type: str, callback: Callable) -> None:
+        """Subscribe to an event with a callback."""
         if not callable(callback):
-            cls.logger.log_error(f"Callback is not callable: {callback}", "EventManager")
-            return
-        with cls.lock:
-            cls.subscribers[event_type].add(callback)
+            raise ValueError(f"Callback is not callable: {callback}")
+        with cls._lock:
+            cls._subscribers[event_type].add(callback)
 
     @classmethod
-    def unsubscribe(cls, event_type, callback):
-        """Unsubscribes a callback from an event type."""
-        with cls.lock:
-            cls.subscribers[event_type].discard(callback)
+    def unsubscribe(cls, event_type: str, callback: Callable) -> None:
+        """Unsubscribe from an event."""
+        with cls._lock:
+            cls._subscribers[event_type].discard(callback)
 
     @classmethod
-    def notify(cls, event_type, *args, **kwargs):
-        """Notifies all subscribers of an event type."""
-        callbacks = cls.subscribers.get(event_type, [])
-        if not callbacks:
-            return
-        with cls.lock:
-            callbacks = list(callbacks)
+    def notify(cls, event_type: str, *args, **kwargs) -> None:
+        """Notify subscribers of an event."""
+        with cls._lock:
+            callbacks = list(cls._subscribers[event_type])
         for callback in callbacks:
-            try:
-                callback(event_type, *args, **kwargs)
-            except Exception as e:
-                cls.logger.log_error(f"Error notifying subscriber: {e}", "EventManager")
+            callback(event_type, *args, **kwargs)

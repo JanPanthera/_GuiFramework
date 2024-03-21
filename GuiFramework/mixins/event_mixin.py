@@ -6,7 +6,7 @@ from typing import Callable, Dict, Set
 class EventMixin:
     def __init__(self):
         self._subscribers: Dict[str, Set[Callable]] = defaultdict(set)
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
     def subscribe(self, event_type: str, callback: Callable) -> None:
         """Subscribe to an event with a callback."""
