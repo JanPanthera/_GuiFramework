@@ -265,10 +265,10 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         else:
             raise ValueError("Root Node must be set before deselecting all nodes.")
 
-    def get_selected_files(self) -> dict:
-        """Return a dictionary of selected files."""
+    def get_selected_files(self) -> list:
+        """Return a list of tuples of selected files."""
         if self.root_node:
-            selected_files = {}
+            selected_files = []
             self._get_selected_files(self.root_node, selected_files)
             return selected_files
         else:
@@ -278,19 +278,19 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         """Recursively expand all folder nodes starting from the given node."""
         if isinstance(node, BaseFolderNode):
             node.expand()
-            for child_node in node.child_nodes:
+            for child_node in node._child_nodes:
                 self._expand_all(child_node)
 
     def _collapse_all(self, node: BaseNode) -> None:
         """Recursively collapse all folder nodes starting from the given node."""
         if isinstance(node, BaseFolderNode):
             node.collapse()
-            for child_node in node.child_nodes:
+            for child_node in node._child_nodes:
                 self._collapse_all(child_node)
 
     def _select_all(self, node: BaseNode) -> None:
         """Recursively select all file nodes starting from the given node."""
-        for child_node in node.child_nodes:
+        for child_node in node._child_nodes:
             if isinstance(child_node, BaseFolderNode):
                 self._select_all(child_node)
             elif isinstance(child_node, BaseFileNode):
@@ -298,16 +298,16 @@ class BaseTreeView(ctk.CTkScrollableFrame):
 
     def _deselect_all(self, node: BaseNode) -> None:
         """Recursively deselect all file nodes starting from the given node."""
-        for child_node in node.child_nodes:
+        for child_node in node._child_nodes:
             if isinstance(child_node, BaseFolderNode):
                 self._deselect_all(child_node)
             elif isinstance(child_node, BaseFileNode):
                 child_node.deselect()
 
-    def _get_selected_files(self, node: BaseNode, selected_files: dict) -> None:
+    def _get_selected_files(self, node: BaseNode, selected_files: list) -> None:
         """Recursively gather selected files starting from the given node."""
-        for child_node in node.child_nodes:
+        for child_node in node._child_nodes:
             if isinstance(child_node, BaseFolderNode):
                 self._get_selected_files(child_node, selected_files)
-            elif isinstance(child_node, BaseFileNode) and child_node.selected:
-                selected_files[child_node.name] = child_node.data
+            elif isinstance(child_node, BaseFileNode) and child_node.is_selected:
+                selected_files.append((child_node.name, child_node.data))
