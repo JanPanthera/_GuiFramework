@@ -232,7 +232,7 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         """Destroy the tree and clean up resources."""
         if self.root_node:
             self.root_node.cleanup()
-            self.root_node.folder_node_container.destroy()
+            self.root_node._folder_node_container.destroy()
             self.root_node = None
         else:
             raise ValueError("Root Node must be set before destroying the tree.")

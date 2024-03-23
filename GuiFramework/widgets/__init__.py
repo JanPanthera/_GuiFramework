@@ -2,6 +2,7 @@
 
 
 from GuiFramework.widgets.tab_view import TabView
+from GuiFramework.widgets.custom_tooltip import CustomTooltip
 from GuiFramework.widgets.custom_textbox import CustomTextbox
 from GuiFramework.widgets.custom_context_menu import CustomContextMenu
 from GuiFramework.widgets.custom_console_textbox import CustomConsoleTextbox
