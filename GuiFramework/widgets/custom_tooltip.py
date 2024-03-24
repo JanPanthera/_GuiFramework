@@ -17,6 +17,9 @@ class CustomTooltip:
         self.widget.bind("<Enter>", self.schedule_show_tooltip)
         self.widget.bind("<Leave>", self.schedule_hide_tooltip)
 
+    def set_text(self, text: str):
+        self.text = text
+
     def schedule_show_tooltip(self, event=None):
         self.cancel_scheduled_events()
         self.mouse_on_widget = True
