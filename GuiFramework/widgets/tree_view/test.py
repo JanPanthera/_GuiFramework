@@ -12,7 +12,7 @@ class Test(ctk.CTkFrame):
         super().__init__(parent_widget, *args, **kwargs)
 
         path = FileOps.resolve_development_path(__file__, "test_dir", ".root")
-        #path = FileOps.resolve_development_path(__file__, "test_dir/folder 1", ".root")
+        # path = FileOps.resolve_development_path(__file__, "test_dir/folder 1", ".root")
 
         self.tree_view = FileTreeView(self, root_path=path)
         self.tree_view.pack(side="top", anchor="w", fill="both", expand=True)
@@ -22,11 +22,13 @@ class Test(ctk.CTkFrame):
         self.tree_view.root_node.state_icon_widget.update_idletasks()
         print(f"state_icon_widget width: {self.tree_view.root_node.state_icon_widget.winfo_width()}")
         print(f"state_icon_widget height: {self.tree_view.root_node.state_icon_widget.winfo_height()}")
-        
+
         def print_selected_nodes():
-            for node in self.tree_view.get_selected_nodes():
-                print(node.text_widget_str)
-        
+            # get_selected_nodes() is a dict with key for file and folder nodes, with the value being a list of selected nodes
+            for node_type, nodes in self.tree_view.get_selected_nodes().items():
+                for node in nodes:
+                    print(f"{node_type}: {node.data}")
+
         test_button = ctk.CTkButton(self, text="Test Button", command=print_selected_nodes)
         test_button.pack(side="top", anchor="w", fill="both", expand=True)
 

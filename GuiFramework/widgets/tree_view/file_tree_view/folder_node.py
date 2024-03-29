@@ -1,13 +1,13 @@
 import os
 
-from GuiFramework.widgets.new_tree_view.file_tree_view.file_node import FileNode
-from GuiFramework.widgets.new_tree_view.base.base_folder_node import BaseFolderNode
+from GuiFramework.widgets.tree_view.file_tree_view.file_node import FileNode
+from GuiFramework.widgets.tree_view.base.base_folder_node import BaseFolderNode
 
 
 class FolderNode(BaseFolderNode):
-    def __init__(self, tree_view_instance, parent_node, parent_container, node_text, data=None, is_root=False):
+    def __init__(self, tree_view_instance, parent_node, parent_container, node_text, data=None):
         icon = "📁"
-        super().__init__(tree_view_instance, parent_node, parent_container, data, text_widget_str=node_text, icon_widget_str=icon, is_root=is_root)
+        super().__init__(tree_view_instance, parent_node, parent_container, data, text_widget_str=node_text, icon_widget_str=icon)
         self._add_children()
 
     def _add_children(self):

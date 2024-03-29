@@ -37,9 +37,7 @@ class BaseFolderNode(BaseNode):
         self.child_nodes_container = ctk.CTkFrame(self.node_container, fg_color="transparent", corner_radius=0)
 
     def add_child(self, child_node):
-        if isinstance(child_node, BaseFileNode):
-            child_node.node_container.pack(side="top", anchor="nw", padx=(self.icon_size[0], 0))
-        child_node.node_container.pack(side="top", anchor="nw")
+        child_node.node_container.pack(side="top", anchor="nw", padx=(self.icon_size[0], 0) if isinstance(child_node, BaseFileNode) else None)
         self.child_nodes.append(child_node)
 
     def remove_child(self, child_node):
@@ -48,22 +46,24 @@ class BaseFolderNode(BaseNode):
             child_node.cleanup()
 
     def toggle_expansion(self):
-        self.is_expanded = not self.is_expanded
-        self.state_icon_widget.configure(text=self.state_icon_str[0] if self.is_expanded else self.state_icon_str[1])
-
-        self.expand() if self.is_expanded else self.collapse()
+        if self.is_expanded:
+            self.collapse()
+        else:
+            self.expand()
 
     def expand(self):
+        self.state_icon_widget.configure(text=self.state_icon_str[0])
         self.child_nodes_container.pack(side="top", anchor="nw", padx=(self.icon_size[0], 0))
+        self.is_expanded = True
 
     def collapse(self):
+        self.state_icon_widget.configure(text=self.state_icon_str[1])
+        for child_node in self.child_nodes:
+            if isinstance(child_node, BaseFolderNode):
+                child_node.collapse()
+            child_node.deselect()
         self.child_nodes_container.pack_forget()
-
-    def on_select(self):
-        self.tree_view_instance.selected_nodes["folder"].append(self)
-
-    def on_deselect(self):
-        self.tree_view_instance.selected_nodes["folder"].remove(self)
+        self.is_expanded = False
 
     def cleanup(self):
         for child_node in self.child_nodes:

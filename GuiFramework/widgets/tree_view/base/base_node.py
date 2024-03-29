@@ -1,5 +1,7 @@
 import customtkinter as ctk
+
 from typing import Optional, Any, Tuple
+from GuiFramework.widgets.custom_tooltip import CustomTooltip as FWK_CustomTooltip
 
 
 class BaseNode:
@@ -10,12 +12,14 @@ class BaseNode:
     DEFAULT_SELECTION_COLOR = "#4d4d4d"
     ICON_SIZE = (20, 20)
 
-    def __init__(self, tree_view_instance, parent_node: Optional["BaseNode"], parent_container: ctk.CTkFrame, data: Optional[Any] = None, **kwargs):
+    def __init__(self, tree_view_instance, parent_node: Optional["BaseNode"] = None, parent_container: ctk.CTkFrame = None, data: Optional[Any] = None, **kwargs):
         """Initialize the node with optional data and configuration."""
         self.tree_view_instance = tree_view_instance
         self.parent_node = parent_node
         self.parent_container = parent_container
         self.data = data
+        self.tree_view_instance.add_node(self)
+        self.create_tooltip = kwargs.pop("create_tooltip", True)
 
         self.node_container: ctk.CTkFrame = None
         self.node_frame: ctk.CTkFrame = None
@@ -40,7 +44,7 @@ class BaseNode:
 
         self.is_visible: bool = False
         self.is_selected: bool = False
-        self.is_root: bool = kwargs.pop("is_root", False)
+        self.is_root: bool = bool(self.parent_node is None)
 
         self._init_gui()
 
@@ -72,6 +76,7 @@ class BaseNode:
             )
             self.icon_widget.bind("<Button-1>", self.toggle_selection)
             self.icon_widget.pack(side="left", anchor="nw", fill="both", padx=self.icon_widget_padx, pady=self.icon_widget_pady)
+            FWK_CustomTooltip(self.icon_widget, self.text_widget_str, show_delay=1000, hide_delay=400) if self.create_tooltip else None
 
         self.text_widget = ctk.CTkLabel(
             self.node_representation_frame, text=self.text_widget_str,
@@ -81,6 +86,7 @@ class BaseNode:
         )
         self.text_widget.bind("<Button-1>", self.toggle_selection)
         self.text_widget.pack(side="left", anchor="nw", fill="both", padx=self.text_widget_padx, pady=self.text_widget_pady)
+        FWK_CustomTooltip(self.text_widget, self.text_widget_str, show_delay=1000, hide_delay=400) if self.create_tooltip else None
 
     def show(self):
         """Make the node visible."""
@@ -101,18 +107,13 @@ class BaseNode:
     def select(self):
         """Select the node and apply the selection color."""
         if self.tree_view_instance.single_selection:
-            for node in self.tree_view_instance.get_selected_nodes():
-                node.deselect()
+            self.tree_view_instance.deselect_all_nodes()
         if self.icon_widget:
             self.icon_widget.configure(fg_color=self.selection_color)
         self.text_widget.configure(fg_color=self.selection_color)
         self.node_representation_frame.configure(fg_color=self.selection_color)
         self.is_selected = True
-        self.on_select()
-
-    def on_select(self):
-        """Handle additional actions upon selection."""
-        raise NotImplementedError("on_select method must be implemented in subclass")
+        self.tree_view_instance.select_node(self)
 
     def deselect(self):
         """Deselect the node and revert the selection color."""
@@ -121,11 +122,16 @@ class BaseNode:
         self.text_widget.configure(fg_color="transparent")
         self.node_representation_frame.configure(fg_color="transparent")
         self.is_selected = False
-        self.on_deselect()
+        self.tree_view_instance.deselect_node(self)
 
-    def on_deselect(self):
-        """Handle additional actions upon deselection."""
-        raise NotImplementedError("on_deselect method must be implemented in subclass")
+    def rename(self, new_name: str):
+        """Rename the node with the given new name."""
+        self.text_widget.configure(text=new_name)
+        self.text_widget_str = new_name
+
+    def set_data(self, data: Any):
+        """Set the data of the node."""
+        self.data = data
 
     def cleanup(self):
         """Clean up resources and destroy the node container."""
