@@ -7,8 +7,8 @@ import os
 
 
 class FileTreeView(BaseTreeView):
-    def __init__(self, parent_widget, root_path, *args, **kwargs):
-        super().__init__(parent_widget, *args, **kwargs)
+    def __init__(self, parent_container, root_path, *args, **kwargs):
+        super().__init__(parent_container, *args, **kwargs)
         self.root_path = root_path
         self.populate_tree()
 
@@ -17,16 +17,8 @@ class FileTreeView(BaseTreeView):
             raise ValueError("The specified root path must be a directory.")
 
         # Initialize the root folder node with the root path
-        root_node = FolderNode(None, self, name=os.path.basename(self.root_path) or self.root_path, data=self.root_path)
+        root_node = FolderNode(self, parent_node=None, parent_container=self, data=self.root_path, node_text=os.path.basename(self.root_path), is_root=True)
         self.add_root_node(root_node)
-        self._populate_folder(root_node)
-
-    def _populate_folder(self, folder_node):
-        for entry in os.scandir(folder_node.data):
-            if entry.is_dir():
-                # iterate through the path and create a folder node for each directory
-                # the folder itself is responsible for populating its children
-                pass
 
     def refresh(self):
         """Refresh the entire tree view based on the current root path."""
