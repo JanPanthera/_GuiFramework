@@ -30,15 +30,15 @@ class DirectoryWatcher:
 
 
 class FileTreeView(BaseTreeView):
-    def __init__(self, parent_container, root_path: str = "", expand_root_node: bool = True, *args, **kwargs):
-        super().__init__(parent_container, *args, **kwargs)
+    def __init__(self, parent_container, root_path: str = "", single_selection=False, expand_root_node: bool = True, *args, **kwargs):
+        super().__init__(parent_container, single_selection, *args, **kwargs)
         self.root_path = root_path
-        self.expand_root_node = expand_root_node
         self.directory_watcher = None
         if root_path:
-            self.create_tree()
+            self.create_tree(expand_root_node)
 
-    def create_tree(self):
+    def create_tree(self, expand_root_node=False):
+
         if not os.path.isdir(self.root_path):
             raise ValueError("The specified root path must be a directory.")
 
@@ -46,7 +46,7 @@ class FileTreeView(BaseTreeView):
             raise ValueError("The root node already exists. call destroy_tree() before creating a new tree.")
 
         self.root_node = FolderNode(self, parent_node=None, parent_container=self, node_text=os.path.basename(self.root_path), data=self.root_path)
-        if self.expand_root_node:
+        if expand_root_node:
             self.root_node.expand()
         self.start_watching()
 
@@ -82,6 +82,7 @@ class FileTreeView(BaseTreeView):
                 pass
             self.deselect_node(node_to_delete)
             node_to_delete.cleanup()
+            node_to_delete.parent_node.remove_child(node_to_delete)
             self.remove_node(node_to_delete)
 
     def handle_move(self, event):
@@ -95,9 +96,9 @@ class FileTreeView(BaseTreeView):
     def find_node_by_path(self, path):
         return next((node for node in self.nodes if node.data == path), None)
 
-    def recreate_tree(self):
+    def recreate_tree(self, expand_root_node=False):
         if self.directory_watcher:
             self.directory_watcher.stop()
             self.directory_watcher = None
         self.destroy_tree()
-        self.create_tree()
+        self.create_tree(expand_root_node)

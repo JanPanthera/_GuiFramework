@@ -1,7 +1,17 @@
 import customtkinter as ctk
 
+from dataclasses import dataclass
 from typing import Optional, Any, Tuple
 from GuiFramework.widgets.custom_tooltip import CustomTooltip as FWK_CustomTooltip
+
+
+@dataclass
+class NodeState:
+    node_id: int
+    parent_node_id: Optional[int]
+    is_root: bool
+    is_visible: bool
+    is_selected: bool
 
 
 class BaseNode:
@@ -47,6 +57,7 @@ class BaseNode:
         self.is_root: bool = bool(self.parent_node is None)
 
         self._init_gui()
+        parent_node.add_child(self) if parent_node else None
 
     def _validate_icon_size(self):
         """Ensure the icon size is a valid tuple."""

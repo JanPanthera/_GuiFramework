@@ -11,13 +11,10 @@ class FolderNode(BaseFolderNode):
         self._add_children()
 
     def _add_children(self):
-        # iterates through self.data (its path) and adds all direct child, no recursion
         for entry in os.scandir(self.data):
             if entry.is_dir():
                 folder_node = FolderNode(self.tree_view_instance, self, self.child_nodes_container, data=entry.path, node_text=entry.name)
-                self.add_child(folder_node)
 
         for entry in os.scandir(self.data):
             if not entry.is_dir():
                 file_node = FileNode(self.tree_view_instance, self, self.child_nodes_container, data=entry.path, node_text=entry.name)
-                self.add_child(file_node)

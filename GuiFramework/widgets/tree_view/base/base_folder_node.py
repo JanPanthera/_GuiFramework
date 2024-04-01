@@ -34,7 +34,11 @@ class BaseFolderNode(BaseNode):
         self.state_icon_widget.pack(side="left", anchor="nw", fill="both", before=self.icon_widget or self.text_widget)
         self.node_container.pack(side="top", anchor="nw")
 
-        self.child_nodes_container = ctk.CTkFrame(self.node_container, fg_color="transparent", corner_radius=0)
+        self.child_nodes_container = ctk.CTkFrame(
+            self.node_container,
+            fg_color="transparent", corner_radius=0,
+            height=0
+        )
 
     def add_child(self, child_node):
         child_node.node_container.pack(side="top", anchor="nw", padx=(self.icon_size[0], 0) if isinstance(child_node, BaseFileNode) else None)
@@ -43,7 +47,7 @@ class BaseFolderNode(BaseNode):
     def remove_child(self, child_node):
         if child_node in self.child_nodes:
             self.child_nodes.remove(child_node)
-            child_node.cleanup()
+            self.child_nodes_container.configure(height=0)
 
     def toggle_expansion(self):
         if self.is_expanded:

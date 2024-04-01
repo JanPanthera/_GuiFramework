@@ -17,10 +17,10 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         """Raise NotImplementedError to enforce method override in subclasses."""
         raise NotImplementedError("Inheriting classes must implement this method")
 
-    def recreate_tree(self):
+    def recreate_tree(self, expand_root_node=False):
         """Destroy and recreate the tree structure."""
         self.destroy_tree()
-        self.create_tree()
+        self.create_tree(expand_root_node)
 
     def destroy_tree(self):
         """Clean up the tree, removing all nodes."""
@@ -39,19 +39,19 @@ class BaseTreeView(ctk.CTkScrollableFrame):
     def select_all_nodes(self):
         """Select all nodes in the tree."""
         for node in self.nodes:
-            self.select_node(node)
+            node.select()
 
     def select_all_file_nodes(self):
         """Select all file nodes in the tree."""
         for node in self.nodes:
             if isinstance(node, BaseFileNode):
-                self.select_node(node)
+                node.select()
 
     def select_all_folder_nodes(self):
         """Select all folder nodes in the tree."""
         for node in self.nodes:
             if isinstance(node, BaseFolderNode):
-                self.select_node(node)
+                node.select()
 
     def deselect_all_nodes(self):
         """Deselect all nodes in the tree."""
@@ -62,13 +62,13 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         """Deselect all file nodes in the tree."""
         for node in self.nodes:
             if isinstance(node, BaseFileNode):
-                self.deselect_node(node)
+                node.deselect()
 
     def deselect_all_folder_nodes(self):
         """Deselect all folder nodes in the tree."""
         for node in self.nodes:
             if isinstance(node, BaseFolderNode):
-                self.deselect_node(node)
+                node.deselect()
 
     def select_node(self, node):
         """Select a single node, respecting the single selection mode if enabled."""
@@ -84,14 +84,26 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         if node in self.selected_nodes[node_type]:
             self.selected_nodes[node_type].remove(node)
 
+    def expand_all(self):
+        """Expand all nodes in the tree."""
+        for node in self.nodes:
+            if isinstance(node, BaseFolderNode):
+                node.expand()
+                
+    def collapse_all(self):
+        """Collapse all nodes in the tree."""
+        for node in self.nodes:
+            if isinstance(node, BaseFolderNode):
+                node.collapse()
+
     def get_selected_nodes(self) -> dict:
         """Return a dictionary of selected nodes."""
         return self.selected_nodes
 
     def get_selected_files(self) -> list:
         """Return a list of selected file nodes."""
-        return self.selected_nodes["file"]
+        return [[node.text_widget_str, node.data] for node in self.selected_nodes["file"]]
 
     def get_selected_folders(self) -> list:
         """Return a list of selected folder nodes."""
-        return self.selected_nodes["folder"]
+        return [[node.text_widget_str, node.data] for node in self.selected_nodes["folder"]]
