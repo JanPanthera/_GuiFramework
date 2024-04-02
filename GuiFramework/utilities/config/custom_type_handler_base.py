@@ -1,47 +1,49 @@
 # GuiFramework/utilities/config/custom_type_handler_base.py
 
 from abc import ABC, abstractmethod
+from typing import Any, Type
 
 
 class CustomTypeHandlerBase(ABC):
     """
-    An abstract base class dedicated to the creation of custom type handlers.
-    These handlers are designed to enable the conversion of custom types into strings and vice versa for the purpose of configuration file storage.
+    Abstract base class for custom type handlers.
     """
 
     @abstractmethod
-    def serialize(self, value):
+    def serialize(self, value: Any) -> str:
         """
-        Transforms a custom type value into a string suitable for configuration file storage.
+        Abstract method to serialize a value.
 
-        Args:
-            value: The custom type value to be transformed.
-
-        Raises:
-            NotImplementedError: This method must be overridden in derived classes.
+        :param value: The value to serialize.
+        :raises NotImplementedError: If the method is not implemented.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def deserialize(self, value):
+    def deserialize(self, value: str) -> Any:
         """
-        Reverts a string from a configuration file into its original custom type.
+        Abstract method to deserialize a value.
 
-        Args:
-            value: The string value to be reverted into a custom type.
-
-        Raises:
-            NotImplementedError: This method must be overridden in derived classes.
+        :param value: The value to deserialize.
+        :raises NotImplementedError: If the method is not implemented.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def get_type(self):
+    def get_type(self) -> Type:
         """
-        Returns the type that the handler is for.
+        Abstract method to get the type of the value.
 
-        Raises:
-            NotImplementedError: This method must be overridden in derived classes.
+        :raises NotImplementedError: If the method is not implemented.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_test_value(self) -> Any:
+        """
+        Abstract method to get a test value.
+
+        :raises NotImplementedError: If the method is not implemented.
         """
         raise NotImplementedError
 
@@ -60,3 +62,29 @@ class CustomTypeHandlerBase(ABC):
         """
         if not isinstance(value, expected_type):
             raise TypeError(f"Expected value to be of type {type_name}, but got type {type(value).__name__} instead.")
+
+    @abstractmethod
+    def validate_serialization(self) -> None:
+        """
+        Validates the serialization and deserialization methods by testing them with a test value.
+
+        :raises AssertionError: If the deserialized value does not match the original test value.
+        """
+        test_value = self.get_test_value()
+        serialized_value = self.serialize(test_value)
+        deserialized_value = self.deserialize(serialized_value)
+        assert deserialized_value == test_value, "Serialization test failed: deserialized value does not match the original"
+
+    def validate_custom_type_handler(self) -> None:
+        """
+        Validates the custom type handler by checking the type of the test value and the serialization.
+
+        :raises TypeError: If the type of the test value or the return value of get_type() is not correct.
+        """
+        type_ = self.get_type()
+        if not isinstance(type_, type):
+            raise TypeError(f"Expected get_type() to return a type object, got {type(type_).__name__} instead.")
+        test_value = self.get_test_value()
+        if not isinstance(test_value, type_):
+            raise TypeError(f"Expected get_test_value() to return a {type_.__name__}, got {type(test_value).__name__} instead.")
+        self.validate_serialization()

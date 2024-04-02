@@ -6,7 +6,8 @@ import customtkinter as ctk
 class CustomPopupMessageBox(ctk.CTkToplevel):
     def __init__(self, main_window, title="Popup", message="Your message here",
                  message_font=("Arial", 18), button_font=("Arial", 18, "bold"),
-                 buttons=None, *args, **kwargs):
+                 buttons=None, show_entry=False, entry_placeholder="Enter text here...",
+                 entry_font=("Arial", 18), *args, **kwargs):
         super().__init__(master=main_window, *args, **kwargs)
         self.title(title)
         self.resizable(False, False)
@@ -20,8 +21,12 @@ class CustomPopupMessageBox(ctk.CTkToplevel):
         self.label_message = ctk.CTkLabel(self.frame, text=message, wraplength=250, font=message_font)
         self.label_message.pack(pady=10, padx=10)
 
-        self.buttons = buttons
+        self.entry = None
+        if show_entry:
+            self.entry = ctk.CTkEntry(self.frame, placeholder_text=entry_placeholder, font=entry_font)
+            self.entry.pack(pady=10, padx=10)
 
+        self.buttons = buttons
         for button in self.buttons:
             btn = ctk.CTkButton(self.frame, text=button["text"], command=lambda b=button: self.handle_button_press(b["callback"]), font=button_font)
             btn.pack(pady=10, padx=10, side="left", expand=True)
@@ -42,3 +47,6 @@ class CustomPopupMessageBox(ctk.CTkToplevel):
         if callback:
             callback()
         self.destroy()
+
+    def get_entry_text(self):
+        return self.entry.get()

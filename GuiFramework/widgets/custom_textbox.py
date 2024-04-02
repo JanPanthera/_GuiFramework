@@ -37,6 +37,11 @@ class CustomTextbox(ctk.CTkTextbox):
             {"text": self.loc("Select All"), "command": self.select_all},
         ]
 
+    def insert_text(self, text, overwrite=False):
+        if overwrite:
+            self.clear_text()
+        self.insert("end", text)
+
     def copy_selection(self):
         try:
             self.clipboard_clear()
@@ -69,3 +74,6 @@ class CustomTextbox(ctk.CTkTextbox):
 
     def is_empty(self):
         return not bool(self.get("1.0", "end-1c"))
+
+    def get_text(self):
+        return self.get("1.0", "end-1c")

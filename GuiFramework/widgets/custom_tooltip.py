@@ -4,23 +4,27 @@ import customtkinter as ctk
 
 
 class CustomTooltip:
-    def __init__(self, widget, text, delay=200):
+    def __init__(self, widget, text, show_delay=200, hide_delay=200):
         self.widget = widget
         self.text = text
         self.tooltip_window = None
         self.mouse_on_widget = False
         self.mouse_on_tooltip = False
-        self.delay = delay
+        self.show_delay = show_delay
+        self.hide_delay = hide_delay
         self.show_id = None
         self.hide_id = None
 
         self.widget.bind("<Enter>", self.schedule_show_tooltip)
         self.widget.bind("<Leave>", self.schedule_hide_tooltip)
 
+    def set_text(self, text: str):
+        self.text = text
+
     def schedule_show_tooltip(self, event=None):
         self.cancel_scheduled_events()
         self.mouse_on_widget = True
-        self.show_id = self.widget.after(self.delay, self.show_tooltip, event)
+        self.show_id = self.widget.after(self.show_delay, self.show_tooltip, event)
 
     def show_tooltip(self, event=None):
         if self.tooltip_window is not None:
@@ -51,7 +55,7 @@ class CustomTooltip:
         self.cancel_scheduled_events()
         self.mouse_on_widget = False
         self.mouse_on_tooltip = False
-        self.hide_id = self.widget.after(self.delay, self.hide_tooltip)
+        self.hide_id = self.widget.after(self.hide_delay, self.hide_tooltip)
 
     def hide_tooltip(self):
         if self.tooltip_window:

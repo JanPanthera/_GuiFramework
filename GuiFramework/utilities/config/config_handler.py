@@ -2,128 +2,148 @@
 
 from typing import Any, Dict, Optional, List, Type, Union, Tuple
 
-from .private._config_handler import _ConfigHandler, ConfigFileHandlerConfig, CustomTypeHandlerBase, ConfigVariable
+from .internal._config_handler import _ConfigHandler, ConfigFileHandlerConfig, CustomTypeHandlerBase, ConfigVariable
+from .config_types import ConfigKey
 
 
 class ConfigHandler:
     """Public interface for the ConfigHandler class."""
 
     @staticmethod
-    def add_config(config_name: str, handler_config: ConfigFileHandlerConfig, default_config: Optional[Dict[str, Dict[str, str]]] = None, custom_type_handlers: Optional[Dict[type, CustomTypeHandlerBase]] = None) -> None:
-        """Register a new configuration."""
+    def add_config(config_name: str, handler_config: ConfigFileHandlerConfig, default_config: Optional[List[CustomTypeHandlerBase]] = None, custom_type_handlers: Optional[Dict[type, CustomTypeHandlerBase]] = None) -> None:
+        """Add a new configuration."""
         _ConfigHandler._add_config(config_name, handler_config, default_config, custom_type_handlers)
 
     @staticmethod
-    def add_custom_type_handler(config_name: str, handler: CustomTypeHandlerBase) -> None:
-        """Register a custom type handler."""
-        _ConfigHandler._add_custom_type_handler(config_name, handler)
-
-    @staticmethod
-    def add_custom_type_handlers(config_name: str, handlers: Dict[type, CustomTypeHandlerBase]) -> None:
-        """Register multiple custom type handlers."""
-        _ConfigHandler._add_custom_type_handlers(config_name, handlers)
-
-    @staticmethod
     def get_custom_config(config_name: str) -> Dict[str, Dict[str, str]]:
-        """Retrieve the entire custom configuration."""
+        """Retrieve custom configuration."""
         return _ConfigHandler._get_custom_config(config_name)
 
     @staticmethod
     def get_default_config(config_name: str) -> Dict[str, Dict[str, str]]:
-        """Retrieve the entire default configuration."""
+        """Retrieve default configuration."""
         return _ConfigHandler._get_default_config(config_name)
 
     @staticmethod
     def save_custom_config_to_file(config_name: str) -> None:
-        """Save the custom configuration to file."""
+        """Save custom configuration to file."""
         _ConfigHandler._save_custom_config_to_file(config_name)
 
     @staticmethod
     def load_custom_config_from_file(config_name: str) -> None:
-        """Load the custom configuration from file."""
+        """Load custom configuration from file."""
         _ConfigHandler._load_custom_config_from_file(config_name)
 
     @staticmethod
-    def sync_default_config(config_name: str) -> None:
-        """Synchronize the default configuration."""
-        _ConfigHandler._sync_default_config(config_name)
-
-    @staticmethod
     def sync_custom_config(config_name: str) -> None:
-        """Synchronize the custom configuration."""
+        """Synchronize custom configuration."""
         _ConfigHandler._sync_custom_config(config_name)
 
     @staticmethod
+    def sync_default_config(config_name: str) -> None:
+        """Synchronize default configuration."""
+        _ConfigHandler._sync_default_config(config_name)
+
+    @staticmethod
     def reset_custom_config(config_name: str, auto_save: bool = True) -> None:
-        """Reset the entire custom configuration to default values."""
+        """Reset custom configuration to default."""
         _ConfigHandler._reset_custom_config(config_name, auto_save)
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     @staticmethod
-    def save_setting(config_name: str, section: str, option: str, value: Any, auto_save: bool = True) -> None:
+    def save_setting(config_key: ConfigKey, value: Any) -> None:
         """Save a single setting."""
-        _ConfigHandler._save_setting(config_name, section, option, value, auto_save)
+        _ConfigHandler._save_setting(config_key, value)
 
     @staticmethod
-    def save_settings(config_name: str, settings: Dict[str, Any], auto_save: bool = True) -> None:
+    def save_settings(config_keys: List[Tuple[ConfigKey, Any]]) -> None:
         """Save multiple settings."""
-        _ConfigHandler._save_settings(config_name, settings, auto_save)
+        _ConfigHandler._save_settings(config_keys)
 
     @staticmethod
-    def get_setting(config_name: str, section: str, option: str, fallback_value: Optional[Any] = None, force_default: bool = False, type_to_convert: Optional[Type] = None) -> Any:
+    def get_setting(config_key: ConfigKey, fallback_value: Any = None, force_default: bool = False) -> Any:
         """Retrieve a single setting."""
-        return _ConfigHandler._get_setting(config_name, section, option, fallback_value, force_default, type_to_convert)
+        return _ConfigHandler._get_setting(config_key, fallback_value, force_default)
 
     @staticmethod
-    def get_settings(config_name: str, settings: Dict[str, Dict[str, Any]], force_default: bool = False) -> Dict[str, Dict[str, Any]]:
+    def get_settings(config_keys: List[Dict[str, Union[ConfigKey, Any, bool]]]) -> Dict[str, Dict[str, Any]]:
         """Retrieve multiple settings."""
-        return _ConfigHandler._get_settings(config_name, settings, force_default)
+        return _ConfigHandler._get_settings(config_keys)
 
     @staticmethod
     def reset_setting(config_name: str, section: str, option: str, auto_save: bool = True) -> None:
-        """Reset a single setting to its default value."""
+        """Reset a single setting to default."""
         _ConfigHandler._reset_setting(config_name, section, option, auto_save)
 
     @staticmethod
-    def reset_section(config_name: str, settings: Dict[str, List[str]], auto_save: bool = True) -> None:
-        """Reset an entire section to its default values."""
-        _ConfigHandler._reset_section(config_name, settings, auto_save)
+    def reset_settings(config_name: str, settings: Dict[str, List[str]], auto_save: bool = True) -> None:
+        """Reset multiple settings to default."""
+        _ConfigHandler._reset_settings(config_name, settings, auto_save)
 
     @staticmethod
-    def add_variable(config_name: str, variable: ConfigVariable, auto_save: bool = True) -> None:
-        """Add a variable to the dynamic store."""
-        _ConfigHandler._add_variable(config_name, variable, auto_save)
+    def reset_section(config_name: str, section: str, auto_save: bool = True) -> None:
+        """Reset an entire section to default."""
+        _ConfigHandler._reset_section(config_name, section, auto_save)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     @staticmethod
-    def add_variables(config_name: str, variables: List[ConfigVariable]) -> None:
-        """Add multiple variables to the dynamic store."""
-        _ConfigHandler._add_variables(config_name, variables)
+    def add_variable(config_key: ConfigKey, value: Any, default_value: Any, init_from_file: bool = False) -> None:
+        """Add a new variable."""
+        _ConfigHandler._add_variable(config_key, value, default_value, init_from_file)
 
     @staticmethod
-    def set_variable(config_name: str, updated_variable: ConfigVariable) -> None:
-        """Set the value of a variable."""
-        _ConfigHandler._set_variable(config_name, updated_variable)
+    def add_variables(variables: List[Union[ConfigVariable, Tuple[ConfigVariable, bool]]]) -> None:
+        """Add multiple new variables."""
+        _ConfigHandler._add_variables(variables)
 
     @staticmethod
-    def set_variables(config_name: str, updated_variables: List[ConfigVariable]) -> None:
+    def get_variable(config_key: ConfigKey) -> ConfigVariable:
+        """Retrieve a single variable."""
+        return _ConfigHandler._get_variable(config_key)
+
+    @staticmethod
+    def get_variables(config_keys: List[ConfigKey]) -> List[ConfigVariable]:
+        """Retrieve multiple variables."""
+        return _ConfigHandler._get_variables(config_keys)
+
+    @staticmethod
+    def get_variable_value(config_key: ConfigKey) -> Any:
+        """Get the value of a single variable."""
+        return _ConfigHandler._get_variable_value(config_key)
+
+    @staticmethod
+    def get_variable_values(config_keys: List[ConfigKey]) -> List[Any]:
+        """Get the values of multiple variables."""
+        return _ConfigHandler._get_variable_values(config_keys)
+
+    @staticmethod
+    def set_variable(updated_variable: ConfigVariable) -> None:
+        """Set a single variable."""
+        _ConfigHandler._set_variable(updated_variable)
+
+    @staticmethod
+    def set_variables(updated_variables: List[ConfigVariable]) -> None:
         """Set multiple variables."""
-        _ConfigHandler._set_variables(config_name, updated_variables)
+        _ConfigHandler._set_variables(updated_variables)
 
     @staticmethod
-    def get_variable(config_name: str, variable_name: str, section: Optional[str] = None) -> Optional[ConfigVariable]:
-        """Retrieve the value of a variable."""
-        return _ConfigHandler._get_variable(config_name, variable_name, section)
+    def set_variable_value(config_key: ConfigKey, new_value: Any) -> None:
+        """Set the value of a single variable."""
+        _ConfigHandler._set_variable_value(config_key, new_value)
 
     @staticmethod
-    def get_variables(config_name: str, variables: List[Union[str, Tuple[str, str]]]) -> Dict[str, Dict[str, Optional[ConfigVariable]]]:
-        """Retrieve all variables."""
-        return _ConfigHandler._get_variables(config_name, variables)
+    def set_variable_values(config_keys: List[Tuple[ConfigKey, Any]]) -> None:
+        """Set the values of multiple variables."""
+        _ConfigHandler._set_variable_values(config_keys)
 
     @staticmethod
-    def delete_variable(config_name: str, variable_name: str, section: Optional[str] = None) -> None:
-        """Delete a variable."""
-        _ConfigHandler._delete_variable(config_name, variable_name, section)
+    def delete_variable(config_key: ConfigKey) -> None:
+        """Delete a single variable."""
+        _ConfigHandler._delete_variable(config_key)
 
     @staticmethod
-    def delete_variables(config_name: str, variables: List[Union[str, Tuple[str, str]]]) -> None:
+    def delete_variables(config_keys: List[ConfigKey]) -> None:
         """Delete multiple variables."""
-        _ConfigHandler._delete_variables(config_name, variables)
+        _ConfigHandler._delete_variables(config_keys)

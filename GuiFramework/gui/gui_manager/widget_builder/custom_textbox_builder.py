@@ -6,8 +6,8 @@ from GuiFramework.utilities.logging import Logger
 
 
 class CustomTextboxBuilder(AbstractCtkBuilder):
-    def __init__(self, config_manager=None, localize_func=None):
-        super().__init__(config_manager, localize_func)
+    def __init__(self, localize_func=None):
+        super().__init__(localize_func)
 
     @property
     def widget_type(self):

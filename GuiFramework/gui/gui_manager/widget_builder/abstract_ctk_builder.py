@@ -5,12 +5,13 @@ import customtkinter as ctk
 from GuiFramework.gui.gui_manager.widget_builder.abstract_builder import AbstractBuilder
 from GuiFramework.utilities.logging import Logger
 
+from GuiFramework.utilities.config import ConfigHandler as CH
+from GuiFramework.utilities.config.config_types import ConfigKeyList as CKL
 
 class AbstractCtkBuilder(AbstractBuilder):
-    def __init__(self, config_manager=None, localize_func=None):
+    def __init__(self, localize_func=None):
         self.logger = Logger.get_logger("GuiFramework")
         super().__init__()
-        self.config_manager = config_manager
         self.loc = localize_func
         self.property_handlers = {
             "text": self.handle_text_property,
@@ -78,8 +79,8 @@ class AbstractCtkBuilder(AbstractBuilder):
                 _property = instance.get_var(property_name)
             if _property is None and hasattr(instance, "get_variable"):
                 _property = instance.get_variable(property_name)
-            if _property is None and self.config_manager:
-                _property = self.config_manager.get_variable(property_name)
+            if _property is None and hasattr(CKL, property_name.upper()):
+                _property = CH.get_variable_value(getattr(CKL, property_name.upper()))
             if _property is None:
                 self.logger.log_warning(f"{property_name.capitalize()} property not found.", "AbstractCtkBuilder")
             return _property

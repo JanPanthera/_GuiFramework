@@ -1,4 +1,4 @@
-# GuiFramework/utilities/config/private/_config_dynamic_store.py
+# GuiFramework/utilities/config/internal/_config_dynamic_store.py
 # ATTENTION: This module is for internal use only
 
 import threading
