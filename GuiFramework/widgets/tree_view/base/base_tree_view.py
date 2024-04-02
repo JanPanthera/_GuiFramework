@@ -55,20 +55,18 @@ class BaseTreeView(ctk.CTkScrollableFrame):
 
     def deselect_all_nodes(self):
         """Deselect all nodes in the tree."""
-        for node in self.get_selected_nodes():
-            node.deselect()
+        self.deselect_all_file_nodes()
+        self.deselect_all_folder_nodes()
 
     def deselect_all_file_nodes(self):
         """Deselect all file nodes in the tree."""
-        for node in self.nodes:
-            if isinstance(node, BaseFileNode):
-                node.deselect()
+        for node in self.selected_nodes["file"]:
+            node.deselect()
 
     def deselect_all_folder_nodes(self):
         """Deselect all folder nodes in the tree."""
-        for node in self.nodes:
-            if isinstance(node, BaseFolderNode):
-                node.deselect()
+        for node in self.selected_nodes["folder"]:
+            node.deselect()
 
     def select_node(self, node):
         """Select a single node, respecting the single selection mode if enabled."""
@@ -89,7 +87,7 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         for node in self.nodes:
             if isinstance(node, BaseFolderNode):
                 node.expand()
-                
+
     def collapse_all(self):
         """Collapse all nodes in the tree."""
         for node in self.nodes:
