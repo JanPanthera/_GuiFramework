@@ -44,9 +44,13 @@ class CustomPopupMessageBox(ctk.CTkToplevel):
         self.geometry(f"+{popup_x}+{popup_y}")
 
     def handle_button_press(self, callback):
-        if callback:
+        if self.entry:
+            callback(self.get_entry_text())
+        else:
             callback()
         self.destroy()
 
     def get_entry_text(self):
-        return self.entry.get()
+        if self.entry:
+            return self.entry.get()
+        return None
