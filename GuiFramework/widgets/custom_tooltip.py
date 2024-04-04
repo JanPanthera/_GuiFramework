@@ -41,6 +41,22 @@ class CustomTooltip:
         self.widget.bind("<Enter>", self._on_mouse_enter)
         self.widget.bind("<Leave>", self._on_mouse_leave)
 
+    def set_text(self, text: str) -> None:
+        """Set the text of the tooltip."""
+        self.text = text
+
+    def set_font(self, font: Tuple[str, int]) -> None:
+        """Set the font of the tooltip."""
+        self.font = font
+
+    def set_bg_color(self, color: str) -> None:
+        """Set the background color of the tooltip."""
+        self.bg_color = color
+
+    def set_text_color(self, color: str) -> None:
+        """Set the text color of the tooltip."""
+        self.text_color = color
+
     def _display_tooltip(self, event=None) -> None:
         """Display the tooltip with adjusted position."""
         if self.tooltip_window:
