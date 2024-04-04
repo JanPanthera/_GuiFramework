@@ -112,18 +112,23 @@ class _ConfigHandler:
         return result
 
     @classmethod
-    def _reset_setting(cls, config_name: str, section: str, option: str, auto_save: bool = True) -> None:
+    def _reset_setting(cls, config_key: ConfigKey, auto_save: bool = None) -> None:
         """ResResets a setting in a configuration file to its default value."""
-        _ConfigFileHandler._reset_setting(config_name, section, option, auto_save)
+        _ConfigFileHandler._reset_setting(config_key.config_name, config_key.section, config_key.name, auto_save or config_key.auto_save)
+        if config_key in cls._config_variables:
+            variable = cls._config_variables._get_variable(config_key)
+            variable.set_value(variable._default_value)
 
     @classmethod
-    def _reset_settings(cls, config_name: str, settings: Dict[str, List[str]], auto_save: bool = True) -> None:
+    def _reset_settings(cls, config_keys: List[ConfigKey]) -> None:
         """Resets multiple settings in a configuration file to their default values."""
-        for section, options in settings.items():
-            for option in options:
-                _ConfigFileHandler._reset_setting(config_name, section, option, False)
-        if auto_save:
-            _ConfigFileHandler._save_custom_config_to_file(config_name)
+        for config_key in config_keys:
+            cls._reset_setting(config_key)
+        configs_saved = {}
+        for config_key in config_keys:
+            if config_key.config_name not in configs_saved:
+                _ConfigFileHandler._save_custom_config_to_file(config_key.config_name)
+                configs_saved[config_key.config_name] = True
 
     @classmethod
     def _reset_section(cls, config_name: str, section: str, auto_save: bool = True) -> None:

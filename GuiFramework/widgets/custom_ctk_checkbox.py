@@ -8,6 +8,8 @@ from .custom_tooltip import CustomTooltip as FWK_CustomTooltip
 
 class CustomCTKCheckbox(CTkCheckBox):
     def __init__(self, checkbox_text: str, checkbox_properties: dict, tooltip_text: Optional[str] = None, tooltip_properties: Optional[dict] = None, pack_type: str = "grid", pack_properties: Optional[dict] = None, loc_func: Optional[Callable] = lambda x: x):
+        if not checkbox_properties.get("master"):
+            raise ValueError("master must be provided in checkbox_properties")
         self.tooltip = None
         self.loc_func = loc_func
 

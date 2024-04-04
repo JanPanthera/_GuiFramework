@@ -29,7 +29,7 @@ class FileOps:
     # File Operations
     @staticmethod
     def write_file(file_path, content, append=False, encoding='utf-8'):
-        """Write content to a file."""
+        """Write or append content to a file."""
         with FileOps.lock:
             try:
                 FileOps.ensure_directory_exists(file_path)
@@ -54,7 +54,7 @@ class FileOps:
 
     @staticmethod
     def load_file(file_path, encoding='utf-8'):
-        """Load content from a file."""
+        """Load and return content from a file."""
         with FileOps.lock:
             try:
                 with open(file_path, "r", encoding=encoding) as file:
@@ -68,12 +68,12 @@ class FileOps:
 
     @staticmethod
     def create_file(file_path, encoding='utf-8'):
-        """Create a file with content, if provided."""
+        """Create an empty file."""
         FileOps.write_file(file_path, "", encoding='utf-8')
 
     @staticmethod
     def delete_file(file_path):
-        """Delete a file."""
+        """Delete a specified file."""
         with FileOps.lock:
             try:
                 os.remove(file_path)
@@ -84,7 +84,7 @@ class FileOps:
 
     @staticmethod
     def copy_file(source_file, destination, preserve_metadata=False):
-        """Copy a file to a destination."""
+        """Copy a file to a specified destination."""
         with FileOps.lock:
             try:
                 FileOps.ensure_directory_exists(destination)
@@ -99,7 +99,7 @@ class FileOps:
 
     @staticmethod
     def move_file(source_file, destination):
-        """Move a file to a destination."""
+        """Move a file to a specified destination."""
         with FileOps.lock:
             try:
                 FileOps.ensure_directory_exists(destination)
@@ -116,7 +116,7 @@ class FileOps:
 
     @staticmethod
     def change_file_extension(file_path, new_extension):
-        """Change the file extension of a file."""
+        """Change the extension of a specified file."""
         with FileOps.lock:
             try:
                 base, _ = os.path.splitext(file_path)
@@ -127,7 +127,7 @@ class FileOps:
     # Directory Operations
     @staticmethod
     def create_directory(directory):
-        """Create a directory."""
+        """Create a directory if it doesn't exist."""
         with FileOps.lock:
             try:
                 os.makedirs(directory, exist_ok=True)
@@ -136,7 +136,7 @@ class FileOps:
 
     @staticmethod
     def delete_directory(directory, delete_contents=True):
-        """Delete a directory."""
+        """Delete a directory, optionally including its contents."""
         with FileOps.lock:
             try:
                 if delete_contents:
@@ -150,7 +150,7 @@ class FileOps:
 
     @staticmethod
     def purge_directory(directory):
-        """Purge a directory of all contents."""
+        """Remove all contents from a directory."""
         with FileOps.lock:
             try:
                 for entry in os.scandir(directory):
@@ -165,7 +165,7 @@ class FileOps:
 
     @staticmethod
     def get_files_in_directory(directory, pattern="", include_nested=False):
-        """List all files in a directory."""
+        """List files in a directory, optionally matching a pattern and including nested directories."""
         with FileOps.lock:
             try:
                 if include_nested:
@@ -178,7 +178,7 @@ class FileOps:
 
     @staticmethod
     def get_directories_in_directory(directory, pattern="", include_nested=False):
-        """List all directories in a directory."""
+        """List directories in a directory, optionally matching a pattern and including nested directories."""
         with FileOps.lock:
             try:
                 if include_nested:
@@ -191,7 +191,7 @@ class FileOps:
 
     @staticmethod
     def get_contents_in_directory(directory, pattern="", include_nested=False):
-        """Get all files and directories in a directory as a plain list."""
+        """List all contents in a directory, optionally matching a pattern and including nested directories."""
         with FileOps.lock:
             try:
                 if include_nested:
@@ -205,13 +205,13 @@ class FileOps:
     # File Information
     @staticmethod
     def file_exists(file_path):
-        """Check if a file exists in a directory."""
+        """Return True if the specified file exists."""
         with FileOps.lock:
             return os.path.exists(file_path)
 
     @staticmethod
     def is_file(file_path):
-        """Check if a path is a file."""
+        """Return True if the path is a file; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.path.isfile(file_path)
@@ -220,7 +220,7 @@ class FileOps:
 
     @staticmethod
     def is_file_empty(file_path):
-        """Check if a file is empty."""
+        """Return True if the file is empty; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.stat(file_path).st_size == 0
@@ -229,7 +229,7 @@ class FileOps:
 
     @staticmethod
     def is_file_readable(file_path):
-        """Check if a file is readable."""
+        """Return True if the file is readable; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.access(file_path, os.R_OK)
@@ -238,7 +238,7 @@ class FileOps:
 
     @staticmethod
     def is_file_writable(file_path):
-        """Check if a file is writable."""
+        """Return True if the file is writable; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.access(file_path, os.W_OK)
@@ -247,7 +247,7 @@ class FileOps:
 
     @staticmethod
     def get_file_size(file_path):
-        """Get the file size in bytes."""
+        """Return the file size in bytes; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.path.getsize(file_path)
@@ -256,7 +256,7 @@ class FileOps:
 
     @staticmethod
     def get_file_creation_time(file_path):
-        """Get the file creation time."""
+        """Return the file creation time; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.path.getctime(file_path)
@@ -265,7 +265,7 @@ class FileOps:
 
     @staticmethod
     def get_file_modification_time(file_path):
-        """Get the file modification time."""
+        """Return the file modification time; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.path.getmtime(file_path)
@@ -274,84 +274,96 @@ class FileOps:
 
     @staticmethod
     def get_file_access_time(file_path):
-        """Get the file access time."""
+        """Return the file access time; print an error if not found."""
         with FileOps.lock:
             if FileOps.file_exists(file_path):
                 return os.path.getatime(file_path)
             print(f"File not found: {file_path}")
             return 0
 
+    @staticmethod
+    def validate_file_name(file_name):
+        """Return invalid characters in a file name."""
+        with FileOps.lock:
+            return FileOps.get_invalid_file_name_chars(file_name)
+
     # Directory Information
     @staticmethod
     def is_directory(directory):
-        """Check if a path is a directory."""
+        """Return True if the path is a directory."""
         with FileOps.lock:
             return os.path.isdir(directory)
 
     @staticmethod
     def directory_exists(directory):
-        """Check if a directory exists."""
+        """Return True if the directory exists."""
         with FileOps.lock:
             return os.path.isdir(directory)
 
     @staticmethod
     def is_directory_empty(directory):
-        """Check if a directory is empty."""
+        """Return True if the directory is empty."""
         with FileOps.lock:
             return not os.listdir(directory)
 
     @staticmethod
     def is_directory_readable(directory):
-        """Check if a directory is readable."""
+        """Return True if the directory is readable."""
         with FileOps.lock:
             return os.access(directory, os.R_OK)
 
     @staticmethod
     def is_directory_writable(directory):
-        """Check if a directory is writable."""
+        """Return True if the directory is writable."""
         with FileOps.lock:
             return os.access(directory, os.W_OK)
+
+    @staticmethod
+    def validate_directory_name(directory_name):
+        """Return invalid characters in a directory name."""
+        with FileOps.lock:
+            return FileOps.get_invalid_file_name_chars(directory_name)
 
     # Path Operations
     @staticmethod
     def join_paths(*args):
-        """Join paths together."""
+        """Join and return the combined paths."""
         with FileOps.lock:
             return os.path.join(*args)
 
     @staticmethod
     def get_file_name(file_path):
-        """Get the file name from a file path."""
+        """Return the file name from a file path."""
         with FileOps.lock:
             return os.path.basename(file_path)
 
     @staticmethod
     def get_file_name_without_extension(file_path):
-        """Get the file name without extension from a file path."""
+        """Return the file name without its extension from a file path."""
         with FileOps.lock:
             return os.path.splitext(os.path.basename(file_path))[0]
 
     @staticmethod
     def get_file_extension(file_path):
-        """Get the file extension from a file path."""
+        """Return the file extension from a file path."""
         with FileOps.lock:
             return os.path.splitext(file_path)[1]
 
     @staticmethod
     def _get_directory(file_path):
-        """Get the directory from a file path."""
+        """Return the directory from a file path."""
         with FileOps.lock:
             return os.path.dirname(file_path)
 
     @staticmethod
     def get_directory_name(file_path):
-        """Get the directory name from a file path."""
+        """Return the directory name from a file path."""
         with FileOps.lock:
             return os.path.dirname(file_path)
 
     @staticmethod
     def get_parent_directory(file_path, directory):
-        """Get the parent directory from a file path."""
+        """Return the parent directory from a file path."""
         with FileOps.lock:
             while file_path:
                 file_path, tail = os.path.split(file_path)
@@ -369,14 +381,7 @@ class FileOps:
 
     @staticmethod
     def resolve_development_path(start_path, sub_path='', root_marker="main.py"):
-        """
-        Resolves the absolute path for a given sub-path relative to the project's root directory,
-        starting the search from the given start_path.
-
-        :param start_path: The absolute path of the starting point for the search, typically __file__ of the calling script.
-        :param sub_path: A relative path from the project's root directory.
-        :return: The absolute path corresponding to the sub_path within the project's root directory.
-        """
+        """Resolve and return the absolute path for a given sub-path relative to the project's root."""
         current_dir = os.path.dirname(os.path.abspath(start_path))
 
         while not os.path.exists(os.path.join(current_dir, root_marker)):
@@ -388,17 +393,30 @@ class FileOps:
         return os.path.join(current_dir, sub_path)
 
     @staticmethod
-    def get_invalid_file_name_chars(file_name, valid_chars=""):
-        """Get invalid characters in a file name."""
+    def get_invalid_file_name_chars(file_name):
+        """Return invalid characters in a file name, 'Empty file name' if empty or the file_name if valid."""
         with FileOps.lock:
-            invalid_chars = set(file_name) - set(valid_chars)
-            if invalid_chars:
-                return ", ".join(invalid_chars)
-            return ""
+            if not file_name.strip():
+                return "Empty file name"
+
+            # Including control characters and spaces in the set of invalid characters
+            invalid_chars = set('\\/:*?"<>|' + ''.join(chr(i) for i in range(32)))  # ASCII 0-31 are control chars
+            found_invalid_chars = {char for char in file_name if char in invalid_chars}
+
+            # Check for OS reserved names (mainly for Windows)
+            reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+            base_name, ext = os.path.splitext(file_name)
+            if base_name.upper() in reserved_names:
+                found_invalid_chars.add(base_name)
+
+            if found_invalid_chars:
+                return ', '.join(found_invalid_chars)
+            else:
+                return file_name
 
     @staticmethod
     def get_file_names_in_directory(directory, include_nested=False):
-        """List all file names in a directory."""
+        """List and return all file names in a directory."""
         with FileOps.lock:
             try:
                 if include_nested:
@@ -411,7 +429,7 @@ class FileOps:
 
     @staticmethod
     def get_directory_names_in_directory(directory, include_nested=False):
-        """List all directory names in a directory."""
+        """List and return all directory names in a directory."""
         with FileOps.lock:
             try:
                 if include_nested:

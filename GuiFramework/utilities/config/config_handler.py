@@ -72,14 +72,14 @@ class ConfigHandler:
         return _ConfigHandler._get_settings(config_keys)
 
     @staticmethod
-    def reset_setting(config_name: str, section: str, option: str, auto_save: bool = True) -> None:
+    def reset_setting(config_key: ConfigKey, auto_save: bool = None) -> None:
         """Reset a single setting to default."""
-        _ConfigHandler._reset_setting(config_name, section, option, auto_save)
+        _ConfigHandler._reset_setting(config_key, auto_save)
 
     @staticmethod
-    def reset_settings(config_name: str, settings: Dict[str, List[str]], auto_save: bool = True) -> None:
+    def reset_settings(config_keys: List[ConfigKey]) -> None:
         """Reset multiple settings to default."""
-        _ConfigHandler._reset_settings(config_name, settings, auto_save)
+        _ConfigHandler._reset_settings(config_keys)
 
     @staticmethod
     def reset_section(config_name: str, section: str, auto_save: bool = True) -> None:
