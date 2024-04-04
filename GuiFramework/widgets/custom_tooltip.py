@@ -76,7 +76,7 @@ class CustomTooltip:
 
         x, y = self._adjust_position(x, y, width, height)
 
-        self.tooltip_window.wm_geometry(f"{width}x{height}+{x}+{y}")
+        self.tooltip_window.wm_geometry(f"{int(width)}x{int(height)}+{int(x)}+{int(y)}")
 
         self.tooltip_window.bind("<Enter>", self._on_tooltip_enter)
         self.tooltip_window.bind("<Leave>", self._on_mouse_leave)
