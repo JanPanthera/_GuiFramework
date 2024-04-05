@@ -10,7 +10,8 @@ class BaseFolderNode(BaseNode):
     DEFAULT_STATE_ICONS = ("▼", "▶")
 
     def __init__(self, tree_view_instance, parent_node, parent_container, data: Any = None, **kwargs):
-        super().__init__(tree_view_instance, parent_node, parent_container, data, **kwargs)
+        folder_selectable = tree_view_instance.folder_selectable
+        super().__init__(tree_view_instance, parent_node, parent_container, data, selectable=folder_selectable, **kwargs)
         self.child_nodes_container = None
 
         self.state_icon_widget = None

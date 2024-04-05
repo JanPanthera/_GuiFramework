@@ -52,6 +52,7 @@ class BaseNode:
         self.icon_widget_padx: Tuple[int, int] = kwargs.pop("icon_widget_padx", self.DEFAULT_PADX)
         self.icon_widget_pady: Tuple[int, int] = kwargs.pop("icon_widget_pady", self.DEFAULT_PADY)
 
+        self._selectable: bool = kwargs.pop("selectable", True)
         self.is_visible: bool = False
         self.is_selected: bool = False
         self.is_root: bool = bool(self.parent_node is None)
@@ -113,27 +114,30 @@ class BaseNode:
 
     def toggle_selection(self, event=None):
         """Toggle the selection state of the node."""
-        self.deselect() if self.is_selected else self.select()
+        if self._selectable:
+            self.deselect() if self.is_selected else self.select()
 
     def select(self):
         """Select the node and apply the selection color."""
-        if self.tree_view_instance.single_selection:
-            self.tree_view_instance.deselect_all_nodes()
-        if self.icon_widget:
-            self.icon_widget.configure(fg_color=self.selection_color)
-        self.text_widget.configure(fg_color=self.selection_color)
-        self.node_representation_frame.configure(fg_color=self.selection_color)
-        self.is_selected = True
-        self.tree_view_instance.select_node(self)
+        if self._selectable and not self.is_selected:
+            if self.tree_view_instance.single_selection:
+                self.tree_view_instance.deselect_all_nodes()
+            if self.icon_widget:
+                self.icon_widget.configure(fg_color=self.selection_color)
+            self.text_widget.configure(fg_color=self.selection_color)
+            self.node_representation_frame.configure(fg_color=self.selection_color)
+            self.is_selected = True
+            self.tree_view_instance.select_node(self)
 
     def deselect(self):
         """Deselect the node and revert the selection color."""
-        if self.icon_widget:
-            self.icon_widget.configure(fg_color="transparent")
-        self.text_widget.configure(fg_color="transparent")
-        self.node_representation_frame.configure(fg_color="transparent")
-        self.is_selected = False
-        self.tree_view_instance.deselect_node(self)
+        if self._selectable and self.is_selected:
+            if self.icon_widget:
+                self.icon_widget.configure(fg_color="transparent")
+            self.text_widget.configure(fg_color="transparent")
+            self.node_representation_frame.configure(fg_color="transparent")
+            self.is_selected = False
+            self.tree_view_instance.deselect_node(self)
 
     def rename(self, new_name: str):
         """Rename the node with the given new name."""
@@ -143,6 +147,10 @@ class BaseNode:
     def set_data(self, data: Any):
         """Set the data of the node."""
         self.data = data
+
+    def set_selectable(self, selectable: bool):
+        """Set the node's selectable state."""
+        self._selectable = selectable
 
     def cleanup(self):
         """Clean up resources and destroy the node container."""
