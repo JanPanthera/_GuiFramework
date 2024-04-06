@@ -5,11 +5,13 @@ from .base_folder_node import BaseFolderNode
 
 
 class BaseTreeView(ctk.CTkScrollableFrame):
-    def __init__(self, parent_container, single_selection=False, *args, **kwargs):
+    def __init__(self, parent_container, single_selection=False, file_selectable: bool = True, folder_selectable: bool = True, *args, **kwargs):
         """Initialize the tree view with optional single selection mode."""
         super().__init__(parent_container, *args, **kwargs)
         self.root_node = None
         self.single_selection = single_selection
+        self.file_selectable = file_selectable
+        self.folder_selectable = folder_selectable
         self.nodes = []
         self.selected_nodes: dict = {"folder": [], "file": []}
 
@@ -26,7 +28,9 @@ class BaseTreeView(ctk.CTkScrollableFrame):
         """Clean up the tree, removing all nodes."""
         if self.root_node:
             self.root_node.cleanup()
-            self.root_node = None
+        self.root_node = None
+        self.nodes = []
+        self.selected_nodes = {"folder": [], "file": []}
 
     def add_node(self, node):
         """Add a node to the tree."""

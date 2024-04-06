@@ -30,8 +30,9 @@ class DirectoryWatcher:
 
 
 class FileTreeView(BaseTreeView):
-    def __init__(self, parent_container, root_path: str = "", single_selection=False, expand_root_node: bool = True, *args, **kwargs):
-        super().__init__(parent_container, single_selection, *args, **kwargs)
+    def __init__(self, parent_container, root_path: str = "", single_selection=False, 
+                 expand_root_node: bool = True, file_selectable: bool = True, folder_selectable: bool = True, *args, **kwargs):
+        super().__init__(parent_container, single_selection, file_selectable, folder_selectable, *args, **kwargs)
         self.root_path = root_path
         self.directory_watcher = None
         if root_path:

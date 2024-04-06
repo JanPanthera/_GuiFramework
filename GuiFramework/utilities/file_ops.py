@@ -1,6 +1,7 @@
 # GuiFramework/utilities/file_ops.py
 
 import os
+import sys
 import json
 import shutil
 import fnmatch
@@ -380,17 +381,22 @@ class FileOps:
             os.makedirs(directory, exist_ok=True)
 
     @staticmethod
-    def resolve_development_path(start_path, sub_path='', root_marker="main.py"):
-        """Resolve and return the absolute path for a given sub-path relative to the project's root."""
-        current_dir = os.path.dirname(os.path.abspath(start_path))
+    def resolve_development_path(start_path, sub_path='', root_marker="GuiFramework"):
+        """Resolve and return the absolute path for a given sub-path relative to the project's root,
+        adapting for both development environments and packaged EXE environments."""
+        # Check if running as a standalone EXE
+        if getattr(sys, 'frozen', False):
+            return os.path.join(os.path.dirname(sys.executable), sub_path)
+        else:
+            current_dir = os.path.dirname(os.path.abspath(start_path))
 
-        while not os.path.exists(os.path.join(current_dir, root_marker)):
-            parent_dir = os.path.dirname(current_dir)
-            if parent_dir == current_dir:
-                raise FileNotFoundError(f"Could not find the root marker '{root_marker}' in any parent directories.")
-            current_dir = parent_dir
+            while not os.path.basename(current_dir) == root_marker:
+                parent_dir = os.path.dirname(current_dir)
+                if parent_dir == current_dir:
+                    raise FileNotFoundError(f"Could not find the root marker '{root_marker}' in any parent directories.")
+                current_dir = parent_dir
 
-        return os.path.join(current_dir, sub_path)
+            return os.path.join(current_dir, sub_path)
 
     @staticmethod
     def get_invalid_file_name_chars(file_name):

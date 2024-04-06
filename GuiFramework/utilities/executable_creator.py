@@ -36,6 +36,8 @@ class ExecutableCreator:
 
     def add_data_file(self, source, destination):
         """Add a data file to the executable."""
+        flag = f"--add-data={source}{os.pathsep}{destination}"
+        print(flag)
         self.additional_flags.append(f"--add-data={source}{os.pathsep}{destination}")
 
     def create_executable(self):
