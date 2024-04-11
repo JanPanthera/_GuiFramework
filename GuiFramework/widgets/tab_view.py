@@ -8,8 +8,6 @@ class TabView(CTkFrame):
         super().__init__(master, *args, **kwargs)
         self.window = master
 
-        self.pack(fill="both", expand=True)
-
         # Vertical expansion weights
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
