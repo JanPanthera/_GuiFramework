@@ -1,8 +1,9 @@
 # GuiFramework/utilities/__init__.py
 
 
-from GuiFramework.utilities.logging import *
 from GuiFramework.utilities.config import *
+from GuiFramework.utilities.logging import *
+from GuiFramework.utilities.localization import *
 
 from GuiFramework.utilities.bimap import BiMap
 
