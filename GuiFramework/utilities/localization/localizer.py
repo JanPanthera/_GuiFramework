@@ -1,7 +1,10 @@
+# GuiFramework/utilities/localization/localizer.py
+
 from dataclasses import dataclass
 from typing import List, Optional
 
 from .locales import Locales, Locale
+from GuiFramework.mixins.event_mixin import StaticEventMixin, create_event_type_id
 
 
 @dataclass
@@ -23,9 +26,10 @@ class _LocalizationSettings:
         return Locales.get_locales()
 
 
-class Localizer:
+class Localizer(StaticEventMixin):
     """Provide localization services for the application."""
     settings: Optional[_LocalizationSettings] = None
+    EVENT_LANGUAGE_CHANGED = create_event_type_id()
 
     @classmethod
     def initialize(cls, setup: LocalizerSetup) -> None:
@@ -43,6 +47,7 @@ class Localizer:
         if cls.settings is None:
             raise RuntimeError("Localizer has not been initialized")
         cls.settings._active_locale = locale
+        cls.notify(cls.EVENT_LANGUAGE_CHANGED, locale)
 
     @classmethod
     def set_fall_back_locale(cls, locale: Locale) -> None:
