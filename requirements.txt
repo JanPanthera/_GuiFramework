@@ -4,3 +4,5 @@ glfw==2.7.0
 PyOpenGL==3.1.7
 setuptools==69.1.1
 watchdog
+flake8
+black
