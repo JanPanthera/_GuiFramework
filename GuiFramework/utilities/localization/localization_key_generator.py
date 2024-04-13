@@ -28,7 +28,7 @@ class LocalizationKeyGenerator:
         """Load and return JSON data from a file."""
         json_path = Path(json_filepath)
         try:
-            with json_path.open() as f:
+            with json_path.open(encoding='utf-8') as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             raise Exception(f"Failed to load JSON file at {json_filepath}: {e}")

@@ -39,7 +39,6 @@ class Localizer(StaticEventMixin):
     @classmethod
     def initialize(cls, setup: LocalizerSetup) -> None:
         """Initialize the Localizer with given setup."""
-        cls._check_initialized()
         cls.settings = _LocalizationSettings(
             _active_locale=setup.active_locale,
             _fall_back_locale=setup.fall_back_locale
