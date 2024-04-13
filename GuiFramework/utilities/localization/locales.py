@@ -24,10 +24,10 @@ class Locales:
             cls.add_locale(locale)
 
     @classmethod
-    def get_locale(cls, locale_code: str) -> Locale:
+    def get_locale(cls, string: str) -> Locale:
         """Return a locale by its locale code."""
         for locale in cls.get_locales():
-            if locale.locale == locale_code:
+            if locale.locale == string or locale.locale_name == string or string in locale.local_aliases:
                 return locale
 
     @classmethod

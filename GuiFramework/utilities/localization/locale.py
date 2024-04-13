@@ -9,6 +9,7 @@ from .locale_file import LocaleFile
 class Locale:
     locale: str
     locale_name: str
+    local_aliases: list[str]
     file: LocaleFile
 
     def __post_init__(self):
@@ -21,7 +22,7 @@ class Locale:
 
     def get_localized_string(self, key: str, *args) -> str:
         """Return a localized string for a given key, formatted with optional arguments."""
-        localized_string = self.file.get_dictionary().get(key, f"Missing key: {key}")
+        localized_string = self.file.get_dictionary().get(key, key)
         return localized_string.format(*args) if args else localized_string
 
     def get_localization_key_for_string(self, key: str) -> str:
