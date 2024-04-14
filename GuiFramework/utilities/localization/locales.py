@@ -29,8 +29,9 @@ class Locales:
         for locale in cls.get_locales():
             if locale.locale == string or locale.locale_name == string or string in locale.local_aliases:
                 return locale
+        raise ValueError(f"Locale '{string}' not found.")
 
     @classmethod
     def get_locales(cls) -> List[Locale]:
         """Return a list of all locales added to the class."""
-        return [getattr(cls, locale_name) for locale_name in dir(cls) if not locale_name.startswith("_")]
+        return [getattr(cls, locale_name) for locale_name in dir(cls) if isinstance(getattr(cls, locale_name), Locale)]

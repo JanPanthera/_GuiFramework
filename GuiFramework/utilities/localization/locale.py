@@ -27,4 +27,4 @@ class Locale:
 
     def get_localization_key_for_string(self, key: str) -> str:
         """Return the localization key for a given string."""
-        return self.file.get_reverse_dictionary().get(key, f"Missing key: {key}")
+        return self.file.get_reverse_dictionary().get(key, key)

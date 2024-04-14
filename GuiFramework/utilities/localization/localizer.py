@@ -1,7 +1,7 @@
 # GuiFramework/utilities/localization/localizer.py
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .locales import Locales, Locale
 from GuiFramework.mixins.event_mixin import StaticEventMixin, create_event_type_id
@@ -71,8 +71,9 @@ class Localizer(StaticEventMixin):
 
     @classmethod
     def get_localized_string(cls, key: str, *args) -> str:
-        """Return a localized string for a given key, using active or fallback locale."""
+        """Return a localized string for a given key or LocalizationKey object, using active or fallback locale."""
         cls._check_initialized()
+        key = key.key if hasattr(key, "key") else key
         localized_string = cls.settings._active_locale.get_localized_string(key, *args)
         if localized_string == key and cls.settings._active_locale != cls.settings._fall_back_locale:
             localized_string = cls.settings._fall_back_locale.get_localized_string(key, *args)
@@ -80,8 +81,9 @@ class Localizer(StaticEventMixin):
 
     @classmethod
     def get_localized_string_for_locale(cls, locale: Locale, key: str, *args) -> str:
-        """Return a localized string for a given key in a specific locale."""
+        """Return a localized string for a given key or LocalizationKey object in a specific locale."""
         cls._check_initialized()
+        key = key.key if hasattr(key, "key") else key
         localized_string = locale.get_localized_string(key, *args)
         if localized_string == key and locale != cls.settings._fall_back_locale:
             localized_string = cls.settings._fall_back_locale.get_localized_string(key, *args)
@@ -89,9 +91,15 @@ class Localizer(StaticEventMixin):
 
     @classmethod
     def get_localization_key_for_string(cls, key: str) -> str:
-        """Return the localization key for a given string, using active or fallback locale."""
+        """Return the localization key for a given string, searching all available locales."""
         cls._check_initialized()
         key_string = cls.settings._active_locale.get_localization_key_for_string(key)
-        if key_string == key and cls.settings._active_locale != cls.settings._fall_back_locale:
-            key_string = cls.settings._fall_back_locale.get_localization_key_for_string(key)
+        if key_string != key:
+            return key_string
+        for locale in Locales.get_locales():
+            if locale == cls.settings._active_locale:
+                continue
+            locale_key_string = locale.get_localization_key_for_string(key)
+            if locale_key_string != key:
+                return locale_key_string
         return key_string

@@ -57,7 +57,8 @@ class LocalizationKeyGenerator:
                 nested_class = cls._generate_class_def(name, value, attr_path)
                 class_lines.append('    ' + nested_class.replace('\n', '\n    '))
             else:
-                class_lines.append(f"    {name.upper()} = LocalizationKey(\"{attr_path}\")")
+                name_without_spaces = name.replace(" ", "").replace("-", "_")
+                class_lines.append(f"    {name_without_spaces.upper()} = LocalizationKey(\"{attr_path}\")")
 
         return "\n".join(class_lines)
 
