@@ -11,12 +11,14 @@ from GuiFramework.utilities.localization.localization_key import LocalizationKey
 
 class CustomCTKLabel(CTkLabel):
     def __init__(self, label_text: str, label_properties: dict, tooltip_text: Optional[str] = None, tooltip_properties: Optional[dict] = None, pack_type: str = "grid", pack_properties: Optional[dict] = None):
+        if not label_properties.get("master"):
+            raise ValueError("master must be provided in label_properties")
         self.tooltip = None
 
         self._label_text: Union[str, LocalizationKey] = label_text
         self._tooltip_text: Optional[Union[str, LocalizationKey]] = tooltip_text
 
-        super().__init__(text=Localizer.get_localized_string(self._label_text), **(label_properties or {}))
+        super().__init__(text=Localizer.get_localized_string(self._label_text), **label_properties)
 
         if tooltip_text:
             self.tooltip = FWK_CustomTooltip(self, text=Localizer.get_localized_string(self._tooltip_text), **(tooltip_properties or {}))
@@ -39,12 +41,12 @@ class CustomCTKLabel(CTkLabel):
     def create_tooltip(self, text: str, properties: Optional[dict] = None):
         if self.tooltip:
             raise ValueError("Tooltip already exists")
-        self.tooltip = FWK_CustomTooltip(self, text=self.loc_func(text), **(properties or {}))
+        self.tooltip = FWK_CustomTooltip(self, text=Localizer.get_localized_string(text), **(properties or {}))
 
     def set_tooltip_text(self, text: str):
         if not self.tooltip:
             raise ValueError("No tooltip to set text to")
-        self.tooltip.set_text(self.loc_func(text))
+        self.tooltip.set_text(Localizer.get_localized_string(text))
 
     def set_tooltip_delay(self, delay: int):
         if not self.tooltip:

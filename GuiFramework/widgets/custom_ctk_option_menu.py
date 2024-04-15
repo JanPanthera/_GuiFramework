@@ -11,6 +11,8 @@ from GuiFramework.utilities.localization.localization_key import LocalizationKey
 
 class CustomCTKOptionMenu(CTkOptionMenu):
     def __init__(self, placeholder_text: Union[str, LocalizationKey], options: List[Union[str, LocalizationKey]], optionmenu_properties: Optional[dict] = None, tooltip_text: Optional[Union[str, LocalizationKey]] = None, tooltip_properties: Optional[dict] = None, pack_type: str = "grid", pack_properties: Optional[dict] = None):
+        if not optionmenu_properties.get("master"):
+            raise ValueError("master must be provided in optionmenu_properties")
         self.tooltip = None
 
         self._placeholder_text: Union[str, LocalizationKey] = placeholder_text
@@ -18,7 +20,7 @@ class CustomCTKOptionMenu(CTkOptionMenu):
         self._tooltip_text: Optional[Union[str, LocalizationKey]] = tooltip_text
 
         self.selected_option = StringVar(master=optionmenu_properties.get("master"), value=Localizer.get_localized_string(self._placeholder_text))
-        super().__init__(variable=self.selected_option, values=[Localizer.get_localized_string(option) for option in self._options_list], **(optionmenu_properties or {}))
+        super().__init__(variable=self.selected_option, values=[Localizer.get_localized_string(option) for option in self._options_list], **optionmenu_properties)
 
         if tooltip_text:
             self.tooltip = FWK_CustomTooltip(self, text=Localizer.get_localized_string(self._tooltip_text), **(tooltip_properties or {}))
@@ -33,7 +35,6 @@ class CustomCTKOptionMenu(CTkOptionMenu):
         self.selected_option.set(Localizer.get_localized_string(selected_option_key))
         translated_options = [Localizer.get_localized_string(option) for option in self._options_list]
         self.configure(values=translated_options)
-        #self.update()
 
     def set_selected_text(self, new_selected_text: str, tooltip_text: Optional[str] = None):
         self.selected_option.set(Localizer.get_localized_string(new_selected_text))
@@ -54,3 +55,6 @@ class CustomCTKOptionMenu(CTkOptionMenu):
         if not self.tooltip:
             raise ValueError("No tooltip to set delay to")
         self.tooltip.set_delay(delay)
+
+    def set_placeholder(self):
+        self.selected_option.set(Localizer.get_localized_string(self._placeholder_text))

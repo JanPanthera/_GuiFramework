@@ -18,7 +18,7 @@ class CustomCTKCheckbox(CTkCheckBox):
         self._checkbox_text: Union[str, LocalizationKey] = checkbox_text
         self._tooltip_text: Optional[Union[str, LocalizationKey]] = tooltip_text
 
-        super().__init__(text=Localizer.get_localized_string(self._checkbox_text), **(checkbox_properties or {}))
+        super().__init__(text=Localizer.get_localized_string(self._checkbox_text), **checkbox_properties)
 
         if tooltip_text:
             self.tooltip = FWK_CustomTooltip(self, text=Localizer.get_localized_string(self._tooltip_text), **(tooltip_properties or {}))

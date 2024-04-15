@@ -11,12 +11,14 @@ from GuiFramework.utilities.localization.localization_key import LocalizationKey
 
 class CustomCTKButton(CTkButton):
     def __init__(self, btn_text: Union[str, LocalizationKey], btn_properties: dict, tooltip_text: Optional[Union[str, LocalizationKey]] = None, tooltip_properties: Optional[dict] = None, pack_type: str = "grid", pack_properties: Optional[dict] = None):
+        if not btn_properties.get("master"):
+            raise ValueError("master must be provided in btn_properties")
         self.tooltip = None
 
         self._btn_text: Union[str, LocalizationKey] = btn_text
         self._tooltip_text: Optional[Union[str, LocalizationKey]] = tooltip_text
 
-        super().__init__(text=Localizer.get_localized_string(self._btn_text), **(btn_properties or {}))
+        super().__init__(text=Localizer.get_localized_string(self._btn_text), **btn_properties)
 
         if tooltip_text:
             self.tooltip = FWK_CustomTooltip(self, text=Localizer.get_localized_string(self._tooltip_text), **(tooltip_properties or {}))
