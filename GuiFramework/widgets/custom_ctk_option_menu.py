@@ -33,7 +33,7 @@ class CustomCTKOptionMenu(CTkOptionMenu):
         self.selected_option.set(Localizer.get_localized_string(selected_option_key))
         translated_options = [Localizer.get_localized_string(option) for option in self._options_list]
         self.configure(values=translated_options)
-        self.update()
+        #self.update()
 
     def set_selected_text(self, new_selected_text: str, tooltip_text: Optional[str] = None):
         self.selected_option.set(Localizer.get_localized_string(new_selected_text))
