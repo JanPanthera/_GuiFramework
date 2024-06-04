@@ -1,7 +1,7 @@
 # GuiFramework/utilities/localization/localization_key_generator.py
 
 import json
-import black
+#import black
 
 from pathlib import Path
 from typing import Any, Dict
@@ -21,7 +21,7 @@ class LocalizationKeyGenerator:
         output_path = cls._determine_output_path(output_path, file_name)
         cls._write_to_file(output_path, full_code)
 
-        cls._format_with_black(output_path)
+        # cls._format_with_black(output_path)
 
     @classmethod
     def _load_json_data(cls, json_filepath: str) -> Dict[str, Any]:
@@ -62,17 +62,17 @@ class LocalizationKeyGenerator:
 
         return "\n".join(class_lines)
 
-    @classmethod
-    def _format_with_black(cls, file_path: str) -> None:
-        """Format the Python file at the specified path using the Black code formatter."""
-        path = Path(file_path)
-        if not path.is_file():
-            raise Exception(f"The path {file_path} is not a valid file.")
+    # @classmethod
+    # def _format_with_black(cls, file_path: str) -> None:
+    #     """Format the Python file at the specified path using the Black code formatter."""
+    #     path = Path(file_path)
+    #     if not path.is_file():
+    #         raise Exception(f"The path {file_path} is not a valid file.")
 
-        mode = black.Mode(line_length=cls.MAX_LINE_LENGTH)
-        try:
-            black.format_file_in_place(path, fast=True, mode=mode, write_back=black.WriteBack.YES)
-        except black.NothingChanged:
-            pass
-        except Exception as e:
-            raise Exception(f"An error occurred while formatting: {e}")
+    #     mode = black.Mode(line_length=cls.MAX_LINE_LENGTH)
+    #     try:
+    #         black.format_file_in_place(path, fast=True, mode=mode, write_back=black.WriteBack.YES)
+    #     except black.NothingChanged:
+    #         pass
+    #     except Exception as e:
+    #         raise Exception(f"An error occurred while formatting: {e}")
